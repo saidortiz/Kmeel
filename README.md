@@ -3,7 +3,8 @@ Simple cross-platform forensic program for processing email files. <br/>
 Can be used to quickly find that one email to use as evidence in court.
 
 ## Installation
-Kmeel requires [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 8 or later to be installed.
+Kmeel requires [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 8 or later to be installed. <br/>
+The latest version can be found [here](https://github.com/Marten4n6/Kmeel/releases).
 
 ### From source:
 Compiling from source requires [Git](https://git-scm.com/) and [Maven](https://maven.apache.org/) to be installed.
