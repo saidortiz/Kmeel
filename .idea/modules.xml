@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Application/Application.iml" filepath="$PROJECT_DIR$/Application/Application.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/BookmarksTabPlugin/BookmarksTabPlugin.iml" filepath="$PROJECT_DIR$/plugins/BookmarksTabPlugin/BookmarksTabPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/EMLParserPlugin/EMLParserPlugin.iml" filepath="$PROJECT_DIR$/plugins/EMLParserPlugin/EMLParserPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/EXIFTabPlugin/EXIFTabPlugin.iml" filepath="$PROJECT_DIR$/plugins/EXIFTabPlugin/EXIFTabPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/HTMLReportPlugin/HTMLReportPlugin.iml" filepath="$PROJECT_DIR$/plugins/HTMLReportPlugin/HTMLReportPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Kmeel.iml" filepath="$PROJECT_DIR$/Kmeel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/KmeelAPI/KmeelAPI.iml" filepath="$PROJECT_DIR$/KmeelAPI/KmeelAPI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/PSTParserPlugin/PSTParserPlugin.iml" filepath="$PROJECT_DIR$/plugins/PSTParserPlugin/PSTParserPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/ReportTabPlugin/ReportTabPlugin.iml" filepath="$PROJECT_DIR$/plugins/ReportTabPlugin/ReportTabPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/SearchTabPlugin/SearchTabPlugin.iml" filepath="$PROJECT_DIR$/plugins/SearchTabPlugin/SearchTabPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugins/TreeTabPlugin/TreeTabPlugin.iml" filepath="$PROJECT_DIR$/plugins/TreeTabPlugin/TreeTabPlugin.iml" />
+    </modules>
+  </component>
+</project>

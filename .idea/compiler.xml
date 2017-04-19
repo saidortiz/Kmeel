@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Application" />
+        <module name="BookmarksTabPlugin" />
+        <module name="EMLParserPlugin" />
+        <module name="EXIFTabPlugin" />
+        <module name="HTMLReportPlugin" />
+        <module name="KmeelAPI" />
+        <module name="PSTParserPlugin" />
+        <module name="ReportTabPlugin" />
+        <module name="SearchTabPlugin" />
+        <module name="TreeTabPlugin" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="Application" target="1.8" />
+      <module name="BookmarksTabPlugin" target="1.8" />
+      <module name="EMLParserPlugin" target="1.8" />
+      <module name="EXIFTabPlugin" target="1.8" />
+      <module name="HTMLReportPlugin" target="1.8" />
+      <module name="Kmeel" target="1.5" />
+      <module name="Kmeel (1)" target="1.5" />
+      <module name="KmeelAPI" target="1.8" />
+      <module name="PSTParserPlugin" target="1.8" />
+      <module name="ReportTabPlugin" target="1.8" />
+      <module name="SearchTabPlugin" target="1.8" />
+      <module name="TreeTabPlugin" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
