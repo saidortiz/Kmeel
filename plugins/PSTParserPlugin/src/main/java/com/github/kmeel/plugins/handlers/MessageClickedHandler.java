@@ -52,13 +52,12 @@ public class MessageClickedHandler {
 
         if (pstObject != null) {
             if (pstObject instanceof PSTAppointment) {
-                /* Appointment */
+                // Appointment
                 PSTAppointment appointment = (PSTAppointment) pstObject;
 
                 messagePane.setBodyText(Utils.getBody(DATE_FORMAT, appointment));
                 messagePane.setHeadersText(appointment.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
 
-                // Attachments
                 if (appointment.hasAttachments()) {
                     messagePane.setAttachmentTabAmount(appointment.getNumberOfAttachments());
 
@@ -74,13 +73,12 @@ public class MessageClickedHandler {
                     }
                 }
             } else if (pstObject instanceof PSTContact) {
-                /* Contact */
+                // Contact
                 PSTContact contact = (PSTContact) pstObject;
 
                 messagePane.setBodyText(Utils.getBody(DATE_FORMAT, contact));
                 messagePane.setHeadersText(contact.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
 
-                // Attachments
                 if (contact.hasAttachments()) {
                     messagePane.setAttachmentTabAmount(contact.getNumberOfAttachments());
 
@@ -96,16 +94,16 @@ public class MessageClickedHandler {
                     }
                 }
             } else if (pstObject instanceof PSTTask) {
-                /* Task */
+                // Task
                 PSTTask task = (PSTTask) pstObject;
 
                 messagePane.setBodyText(Utils.getBody(DATE_FORMAT, task));
                 messagePane.setHeadersText(task.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
             } else if (pstObject instanceof PSTRss) {
-                /* RSS */
+                // RSS
                 log.error("RSS clicked, not yet supported.");
             } else if (pstObject instanceof PSTActivity) {
-                /* Activity */
+                // Activity
                 log.error("Activity clicked, not yet supported.");
             } else {
                 // Message
@@ -114,7 +112,6 @@ public class MessageClickedHandler {
                 messagePane.setBodyText(Utils.getBody(DATE_FORMAT, message));
                 messagePane.setHeadersText(message.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
 
-                // Attachments
                 if (message.hasAttachments()) {
                     messagePane.setAttachmentTabAmount(message.getNumberOfAttachments());
 

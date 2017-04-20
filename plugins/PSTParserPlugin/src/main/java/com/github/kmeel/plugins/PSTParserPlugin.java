@@ -133,7 +133,7 @@ public class PSTParserPlugin extends Plugin {
                                 });
 
                                 calculateMessageAmount(pstFile.getRootFolder()); //Update the messageAmount
-                                loadingTask.updateMessage("Parsing: " + file.getName());
+                                loadingTask.updateMessage("Indexing: " + file.getName());
                             }
 
                             PSTModel.getInstance().getFileFromHash().put(new PSTFileID(pstFile).getId(), pstFile);
@@ -183,7 +183,7 @@ public class PSTParserPlugin extends Plugin {
                             if (subFolder.getContentCount() > 0) {
                                 for (Integer descriptorID : subFolder.getChildDescriptorNodes()) {
                                     try {
-                                        /* Do stuff with the PSTObject here... */
+                                        // Do stuff with the PSTObject here...
                                         PSTObject pstObject = PSTObject.detectAndLoadPSTObject(pstFile, descriptorID);
 
                                         if (pstObject instanceof PSTAppointment) {
@@ -209,7 +209,7 @@ public class PSTParserPlugin extends Plugin {
                             }
                         }
 
-                        //Loop through sub-folders of this sub-folder
+                        // Loop through sub-folders of this sub-folder
                         if (subFolder.getNodeType() != 3) {
                             for (PSTFolder subFolderInfo : subFolder.getSubFolders()) {
                                 extractSubFolder(pstFile, subFolderInfo, newFolderPath + "/", subFolderTreeItem);
@@ -225,8 +225,9 @@ public class PSTParserPlugin extends Plugin {
                 if (isTreePluginEnabled) {
                     CheckBoxTreeItem<TreeObject> rootTreeItem = (CheckBoxTreeItem<TreeObject>)event.getSource().getValue();
 
-                    kmeelAPI.plugins().getPluginManager().getExtensions(PluginableFileTree.class)
-                            .forEach(pluginableFileTree -> pluginableFileTree.addTreeItem(rootTreeItem));
+                    kmeelAPI.plugins().getPluginManager().getExtensions(PluginableFileTree.class).forEach(pluginableFileTree -> {
+                        pluginableFileTree.addTreeItem(rootTreeItem);
+                    });
                 }
 
                 kmeelAPI.settings().set(getName() + "-Parsed", "true");

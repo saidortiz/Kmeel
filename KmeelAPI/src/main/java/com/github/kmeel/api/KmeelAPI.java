@@ -20,13 +20,14 @@ package com.github.kmeel.api;
 
 import com.github.kmeel.api.model.*;
 import com.github.kmeel.api.model.objects.Case;
+import lombok.Getter;
 
 /**
  * @author Marten4n6
  */
 public class KmeelAPI {
 
-    private Case caseObject;
+    private @Getter Case caseObject;
     private Plugins plugins;
     private Database database;
     private Bookmarks bookmarks;

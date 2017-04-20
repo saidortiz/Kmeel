@@ -37,7 +37,7 @@ public class LoadingTask extends Task {
     @Override
     protected Object call() throws Exception {
         countDownLatch = new CountDownLatch(1);
-        countDownLatch.await(); //Just wait until done is called
+        countDownLatch.await(); // Just wait until done is called
         return null;
     }
 

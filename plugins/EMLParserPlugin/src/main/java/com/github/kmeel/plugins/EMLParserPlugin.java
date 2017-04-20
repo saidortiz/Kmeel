@@ -129,7 +129,7 @@ public class EMLParserPlugin extends Plugin {
                             }
                         }
 
-                        loadingTask.updateMessage("Parsing: " + file.getParent());
+                        loadingTask.updateMessage("Indexing: " + file.getParent());
                         loadingTask.updateProgress(loadingProgress.get(), totalFiles);
 
                         @Cleanup InputStream messageInputStream = Files.newInputStream(Paths.get(file.getPath()));

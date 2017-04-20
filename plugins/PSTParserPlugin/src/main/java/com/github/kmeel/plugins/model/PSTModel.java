@@ -76,8 +76,8 @@ public class PSTModel {
 
             return PSTObject.detectAndLoadPSTObject(fileFromHash.get(new PSTFileID(document.get("PSTFileID")).getId()), Long.parseLong(id.getId().split(" ")[0]));
         } catch (Exception ex) {
-            //This ID doesn't belong to the PSTParser (hopefully)
-            //log.debug(ex.getMessage(), ex);
+            // This ID doesn't belong to the PSTParser (hopefully)
+            // log.debug(ex.getMessage(), ex);
             return null;
         }
     }
@@ -105,8 +105,8 @@ public class PSTModel {
 
             return messageIDs;
         } catch (Exception ex) {
-            //This ID doesn't belong to the PSTParser (hopefully)
-            //log.debug(ex.getMessage(), ex);
+            // This ID doesn't belong to the PSTParser (hopefully)
+            // log.debug(ex.getMessage(), ex);
             return null;
         }
     }
@@ -135,7 +135,7 @@ public class PSTModel {
                 PSTObject pstObject = getFromID(kmeelAPI, id);
 
                 if (pstObject instanceof PSTAppointment) {
-                    /* Appointment */
+                    // Appointment
                     PSTAppointment appointment = (PSTAppointment) pstObject;
 
                     return new MessageRow(
@@ -151,7 +151,7 @@ public class PSTModel {
                             new SimpleBooleanProperty(kmeelAPI.bookmarks().isBookmark(id))
                     );
                 } else if (pstObject instanceof PSTContact) {
-                    /* Contact */
+                    // Contact
                     PSTContact contact = (PSTContact) pstObject;
 
                     return new MessageRow(
@@ -167,7 +167,7 @@ public class PSTModel {
                             new SimpleBooleanProperty(kmeelAPI.bookmarks().isBookmark(id))
                     );
                 } else {
-                    /* Message */
+                    // Message
                     PSTMessage message = (PSTMessage) pstObject;
 
                     return new MessageRow(

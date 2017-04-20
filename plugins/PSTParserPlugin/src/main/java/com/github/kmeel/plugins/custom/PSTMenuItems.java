@@ -75,7 +75,7 @@ public class PSTMenuItems {
 
                 menuExport.getItems().add(menuItemExportToEML);
 
-                /* Listeners */
+                // Listeners
                 menuItemExportToEML.setOnAction((event) -> {
                     exportToEML();
                 });
@@ -103,7 +103,7 @@ public class PSTMenuItems {
                             try {
                                 MimeMessage mimeMessage = getMimeMessage(message);
 
-                                //Increment number until the file doesn't exist
+                                // Increment number until the file doesn't exist
                                 while (new File(outputDirectory.getPath() + File.separator + uniqueNumber.get() + ".eml").exists()) {
                                     uniqueNumber.incrementAndGet();
                                 }

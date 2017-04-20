@@ -19,7 +19,7 @@
 package com.github.kmeel;
 
 import com.github.kmeel.api.utils.OSUtils;
-import com.github.kmeel.controller.GUIController;
+import com.github.kmeel.view.TabStage;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -29,10 +29,7 @@ import javafx.stage.Stage;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,18 +59,16 @@ public class Kmeel extends Application {
         createDirectories();
         copyPlugins();
 
-        try {
-            new GUIController().start(stage);
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
-        }
+        new TabStage();
     }
 
     private ArrayList<String> getFilesInJarDirectory() {
         ArrayList<String> files = new ArrayList<>();
 
         try {
-            Files.list(Paths.get(OSUtils.getJarFile().getParent())).forEach(path -> files.add(path.toFile().getName()));
+            Files.list(Paths.get(OSUtils.getJarFile().getParent())).forEach(path -> {
+                files.add(path.toFile().getName());
+            });
             return files;
         } catch (IOException ex) {
             log.error(ex.getMessage(), ex);
@@ -151,7 +146,10 @@ public class Kmeel extends Application {
                 JarEntry entry = enumeration.nextElement();
 
                 if (entry.getName().startsWith("plugins/") && !entry.getName().equals("plugins/")) {
-                    Files.copy(jarFile.getInputStream(entry), Paths.get(OSUtils.getApplicationPath() + entry.getName()), StandardCopyOption.REPLACE_EXISTING);
+                    InputStream plugin = jarFile.getInputStream(entry);
+                    Path pluginOutputPath = Paths.get(OSUtils.getApplicationPath() + entry.getName());
+
+                    Files.copy(plugin, pluginOutputPath, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
 

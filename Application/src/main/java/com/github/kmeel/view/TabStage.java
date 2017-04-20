@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.github.kmeel.controller;
+package com.github.kmeel.view;
 
 import com.github.kmeel.api.model.Version;
 import com.github.kmeel.api.spi.GlobalTab;
+import com.github.kmeel.controller.HomeController;
 import com.github.kmeel.model.FileParser;
 import com.github.kmeel.view.HomeTab;
 import javafx.application.Application;
@@ -34,45 +35,49 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Marten4n6
- *         This class controls the UI
+ *         Tab stage which is always shown.
  */
 @Slf4j
-public class GUIController extends Application {
+public class TabStage extends Stage {
 
     private TabPane tabPane;
-    private HomeTab homeTab;
 
-    @Override
-    public void start(Stage stage) throws Exception {
+    private HomeTab homeTab;
+    private HomeController homeController;
+
+    public TabStage() {
+        setupStage();
+        setupListeners();
+    }
+
+    private void setupStage() {
         BorderPane borderPane = new BorderPane();
         Scene scene = new Scene(borderPane, 900, 600);
         tabPane = new TabPane();
 
         homeTab = new HomeTab();
-        new HomeController(homeTab);
+        homeController = new HomeController(homeTab);
 
-        tabPane.getTabs().add(homeTab.getTab());
+        tabPane.getTabs().add(homeTab);
         borderPane.setCenter(tabPane);
 
-        stage.setTitle("Kmeel - " + Version.getVersion());
-        stage.setScene(scene);
-        stage.centerOnScreen();
-        stage.show();
-
-        // Listeners
-        handleListeners();
-        stage.setOnCloseRequest((WindowEvent event) -> {
-            log.info("Shutting down, goodbye.");
-
-            Platform.exit();
-            System.exit(0);
-        });
+        this.setTitle("Kmeel - " + Version.getVersion());
+        this.setScene(scene);
+        this.centerOnScreen();
+        this.show();
     }
 
     /**
      * Handle handlers of the home tab and ParseController
      */
-    private void handleListeners() {
+    private void setupListeners() {
+        this.setOnCloseRequest((WindowEvent event) -> {
+            log.info("Shutting down, goodbye.");
+
+            Platform.exit();
+            System.exit(0);
+        });
+
         homeTab.setOnNewCase((event) -> {
             Platform.runLater(() -> tabPane.getTabs().removeIf(tab -> !tab.getText().equals("Home")));
         });
@@ -82,7 +87,7 @@ public class GUIController extends Application {
         homeTab.setOnRemoveCase((event) -> {
             Platform.runLater(() -> tabPane.getTabs().removeIf(tab -> !tab.getText().equals("Home")));
         });
-        FileParser.getInstance().setFinishedListener((kmeelAPI, loadingView) -> {
+        homeController.setOnFinishedParsing((kmeelAPI, loadingView) -> {
             loadingView.close();
             kmeelAPI.indexer().close();
 

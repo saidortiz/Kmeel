@@ -57,7 +57,6 @@ public class PSTIndexer {
         Document document = new Document();
         StringBuilder searchableText = new StringBuilder();
 
-        /* Index all the things */
         document.add(new StringField("ID", PSTModel.getInstance().getID(appointment), Field.Store.YES));
         searchableText.append(" ").append(PSTModel.getInstance().getID(appointment));
 
@@ -155,7 +154,6 @@ public class PSTIndexer {
         Document document = new Document();
         StringBuilder searchableText = new StringBuilder();
 
-        /* Index all the things */
         document.add(new StringField("ID", PSTModel.getInstance().getID(message), Field.Store.YES));
         searchableText.append(" ").append(PSTModel.getInstance().getID(message));
 

@@ -22,7 +22,9 @@ import com.github.kmeel.api.KmeelAPI;
 import com.github.kmeel.api.model.Cases;
 import com.github.kmeel.api.model.objects.Case;
 import com.github.kmeel.api.spi.Parser;
+import com.github.kmeel.api.utils.OSUtils;
 import com.github.kmeel.api.view.LoadingView;
+import com.github.kmeel.listeners.FinishedListener;
 import com.github.kmeel.model.FileParser;
 import com.github.kmeel.view.HomeTab;
 import com.github.kmeel.view.NewCaseStage;
@@ -32,8 +34,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -47,11 +51,14 @@ import java.util.concurrent.atomic.AtomicLong;
  *         This class controls the Home tab
  */
 @Slf4j
-class HomeController {
+public class HomeController {
 
     private HomeTab homeTab;
 
-    HomeController(HomeTab homeTab) {
+    private KmeelAPI kmeelAPI;
+    private FinishedListener onFinishedParsing;
+
+    public HomeController(HomeTab homeTab) {
         this.homeTab = homeTab;
 
         handleListeners();
@@ -74,7 +81,7 @@ class HomeController {
                 } else if (newCaseStage.getSources().isEmpty()) {
                     new Alert(Alert.AlertType.ERROR, "Invalid data source.", ButtonType.CLOSE).showAndWait();
                 } else {
-                    KmeelAPI kmeelAPI = newCaseStage.getKmeelAPI();
+                    kmeelAPI = newCaseStage.getKmeelAPI();
 
                     List<String> sources = newCaseStage.getSources();
                     long sourceSize = getSourceSize(kmeelAPI, sources, newCaseStage.isSubFoldersSelected());
@@ -87,7 +94,7 @@ class HomeController {
                             newCaseStage.getHashType(),
                             sources);
 
-                    if (new File(sources.get(0)).isDirectory()) caseObject.setExtractSubFolders(newCaseStage.isSubFoldersSelected());
+                    if (new File(sources.get(0)).isDirectory()) caseObject.setParseSubFolders(newCaseStage.isSubFoldersSelected());
 
                     kmeelAPI.setCase(caseObject);
                     Cases.setCurrentCase(caseObject);
@@ -121,9 +128,19 @@ class HomeController {
                         kmeelAPI.plugins().getPluginManager().getExtensions(Parser.class).forEach(parser -> {
                             parser.setup(kmeelAPI, loadingView);
                         });
-
                         loadingView.show();
-                        FileParser.getInstance().parseFilesOrDirectory(kmeelAPI, loadingView, sources, caseObject.getExtractSubFolders());
+
+                        FileParser fileParser = new FileParser(kmeelAPI, loadingView);
+
+                        fileParser.setFinishedListener((arg1, arg2) -> {
+                            onFinishedParsing.finished(arg1, arg2);
+                        });
+
+                        if (new File(caseObject.getSources().get(0)).isDirectory()) {
+                            fileParser.parseDirectory(new File(caseObject.getSources().get(0)), caseObject.getParseSubFolders());
+                        } else {
+                            fileParser.parseFiles(caseObject.getSources());
+                        }
                     }
 
                     Platform.runLater(() -> homeTab.getTable().getItems().add(caseObject));
@@ -134,7 +151,7 @@ class HomeController {
             try {
                 Case caseObject = homeTab.getTable().getSelectionModel().getSelectedItem();
 
-                KmeelAPI kmeelAPI = new KmeelAPI(caseObject);
+                kmeelAPI = new KmeelAPI(caseObject);
                 Cases.setCurrentCase(caseObject);
 
                 // Check if source exists
@@ -180,9 +197,19 @@ class HomeController {
                 kmeelAPI.plugins().getPluginManager().getExtensions(Parser.class).forEach(parser -> {
                     parser.setup(kmeelAPI, loadingView);
                 });
-
                 loadingView.show();
-                FileParser.getInstance().parseFilesOrDirectory(kmeelAPI, loadingView, caseObject.getSources(), caseObject.getExtractSubFolders());
+
+                FileParser fileParser = new FileParser(kmeelAPI, loadingView);
+
+                fileParser.setFinishedListener((arg1, arg2) -> {
+                    onFinishedParsing.finished(arg1, arg2);
+                });
+
+                if (new File(caseObject.getSources().get(0)).isDirectory()) {
+                    fileParser.parseDirectory(new File(caseObject.getSources().get(0)), caseObject.getParseSubFolders());
+                } else {
+                    fileParser.parseFiles(caseObject.getSources());
+                }
             } catch (NullPointerException ex) {
                 new Alert(Alert.AlertType.ERROR, "No case selected.", ButtonType.CLOSE).showAndWait();
             }
@@ -191,8 +218,15 @@ class HomeController {
             try {
                 String caseName = homeTab.getTable().getSelectionModel().getSelectedItem().getName();
 
+                if (kmeelAPI != null && kmeelAPI.getCaseObject().getName().equals(caseName)) {
+                    kmeelAPI.database().getDataSource().close();
+                }
+
                 Cases.remove(caseName);
-                Platform.runLater(() -> homeTab.getTable().getItems().remove(homeTab.getTable().getSelectionModel().getSelectedItem()));
+
+                Platform.runLater(() -> {
+                    homeTab.getTable().getItems().remove(homeTab.getTable().getSelectionModel().getSelectedItem());
+                });
 
                 log.info("Case \"" + caseName + "\" removed.");
             } catch (NullPointerException ex) {
@@ -204,7 +238,7 @@ class HomeController {
     /**
      * @return A human readable byte size
      */
-    public static String humanReadableByteCount(long bytes) {
+    private String humanReadableByteCount(long bytes) {
         boolean si = false;
         int unit = si ? 1000 : 1024;
         if (bytes < unit) return bytes + " B";
@@ -213,7 +247,7 @@ class HomeController {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    public static long getSourceSize(KmeelAPI kmeelAPI, List<String> sources, boolean extractSubFolders) {
+    private long getSourceSize(KmeelAPI kmeelAPI, List<String> sources, boolean extractSubFolders) {
         final AtomicLong sourceSize = new AtomicLong(0);
 
         if (new File(sources.get(0)).isDirectory()) {
@@ -250,5 +284,9 @@ class HomeController {
             }
         }
         return sourceSize.get();
+    }
+
+    public void setOnFinishedParsing(FinishedListener listener) {
+        onFinishedParsing = listener;
     }
 }

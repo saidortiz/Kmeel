@@ -32,5 +32,5 @@ public class Case {
     private final String name, description, investigator, size, hashType;
     private final List<String> sources;
     private boolean indexed = false;
-    private Boolean extractSubFolders = false;
+    private Boolean parseSubFolders = false;
 }

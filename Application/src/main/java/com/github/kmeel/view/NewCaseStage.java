@@ -74,16 +74,12 @@ public class NewCaseStage extends Stage {
 
         BorderPane borderPane = new BorderPane();
         Scene scene = new Scene(borderPane, 525, 295);
-
-        // Tab pane
         TabPane tabPane = new TabPane();
 
         tabPane.getTabs().addAll(getCaseTab(), getPluginsTab());
 
-        // Add
         borderPane.setCenter(tabPane);
         this.setScene(scene);
-
         this.centerOnScreen();
         this.show();
     }

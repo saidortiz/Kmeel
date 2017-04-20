@@ -40,7 +40,7 @@ import java.util.Optional;
  * @author Marten4n6
  *         View for the home tab
  */
-public class HomeTab {
+public class HomeTab extends Tab{
 
     private ArrayList<ActionListener> onNewCase = new ArrayList<>();
     private ArrayList<ActionListener> onOpenCase = new ArrayList<>();
@@ -48,18 +48,21 @@ public class HomeTab {
 
     private @Getter TableView<Case> table;
 
-    public Tab getTab() {
-        Tab tab = new Tab();
+    public HomeTab() {
+        setupTab();
+    }
+
+    private void setupTab() {
         BorderPane borderPane = new BorderPane();
         VBox vBox = new VBox();
 
         // Tab
         FontAwesomeIconView homeIcon = new FontAwesomeIconView(FontAwesomeIcon.HOME);
 
-        tab.setClosable(false);
-        tab.setText("Home");
+        this.setClosable(false);
+        this.setText("Home");
         homeIcon.setSize("25");
-        tab.setGraphic(homeIcon);
+        this.setGraphic(homeIcon);
 
         // Layout
         borderPane.setPadding(new Insets(5, 5, 5, 5));
@@ -110,10 +113,12 @@ public class HomeTab {
         vBox.getChildren().add(removeCase);
         borderPane.setRight(vBox);
 
-        tab.setContent(borderPane);
+        this.setContent(borderPane);
 
         // Add existing cases
-        Cases.getNames().forEach(caseName -> Platform.runLater(() -> table.getItems().add(Cases.get(caseName))));
+        Cases.getNames().forEach(caseName -> {
+            Platform.runLater(() -> table.getItems().add(Cases.get(caseName)));
+        });
 
         // Listeners
         newCase.setOnAction((event) -> {
@@ -142,8 +147,6 @@ public class HomeTab {
                 openCase.setDisable(false);
             }
         });
-
-        return tab;
     }
 
     public void setOnNewCase(ActionListener listener) {
