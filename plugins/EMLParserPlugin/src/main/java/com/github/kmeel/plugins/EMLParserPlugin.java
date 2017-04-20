@@ -38,6 +38,7 @@ import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeItem;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
 import ro.fortsoft.pf4j.PluginWrapper;
@@ -47,8 +48,10 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,7 +142,8 @@ public class EMLParserPlugin extends Plugin {
 
                         if (isTreePluginEnabled) {
                             if (rootTreeChilden.get(file.getParent()) == null) {
-                                CheckBoxTreeItem<TreeObject> folderNameItem = new CheckBoxTreeItem<>(new TreeObject(new File(file.getParent()).getName(), file.getParent()));
+                                String folderName = new File(file.getParent()).getName() + " (" + getEMLAmountInDirectory(file.getParentFile()) + ")";
+                                CheckBoxTreeItem<TreeObject> folderNameItem = new CheckBoxTreeItem<>(new TreeObject(folderName, file.getParent()));
 
                                 rootTreeItem.getChildren().add(folderNameItem);
                                 rootTreeChilden.put(file.getParent(), folderNameItem);
@@ -147,6 +151,22 @@ public class EMLParserPlugin extends Plugin {
                         }
                         return null;
                     }
+
+                    private int getEMLAmountInDirectory(File directory) {
+                        AtomicInteger amount = new AtomicInteger(0);
+
+                        try {
+                            Files.list(Paths.get(directory.getPath())).forEach(path -> {
+                                if (FilenameUtils.getExtension(path.toString()).equals("eml")) {
+                                    amount.incrementAndGet();
+                                }
+                            });
+                        } catch (IOException ex) {
+                            log.error(ex.getMessage(), ex);
+                        }
+                        return amount.get();
+                    }
+
                 };
 
                 task.setOnSucceeded((event) -> {
