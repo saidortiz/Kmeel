@@ -20,9 +20,13 @@ package com.github.kmeel.api.model;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Cleanup;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import com.github.kmeel.api.utils.OSUtils;
+
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * @author Marten4n6
@@ -39,5 +43,14 @@ public class Database {
         config.setJdbcUrl("jdbc:sqlite:" + OSUtils.getCasePath(caseName) + "Kmeel.db");
 
         dataSource = new HikariDataSource(config);
+
+        try {
+            @Cleanup Statement statement = dataSource.getConnection().createStatement();
+
+            statement.execute("CREATE TABLE IF NOT EXISTS Bookmarks(CaseName, ID, Other)");
+            statement.execute("CREATE TABLE IF NOT EXISTS Tags(CaseName, ID, TagName)");
+        } catch (SQLException ex) {
+            log.error(ex.getMessage(), ex);
+        }
     }
 }

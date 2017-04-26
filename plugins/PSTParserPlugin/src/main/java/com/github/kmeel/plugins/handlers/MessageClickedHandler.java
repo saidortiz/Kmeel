@@ -56,8 +56,6 @@ public class MessageClickedHandler {
             message.getAttachments().forEach(attachment -> {
                 PSTModel.getInstance().getAttachmentFromID().put(attachment.getRow().getID(), attachment.getInputStream());
 
-                log.debug("Putting inputstream from ID: " + attachment.getRow().getID() + " = " + attachment.getInputStream());
-
                 Platform.runLater(() -> {
                     messagePane.getAttachmentsTable().getItems().add(attachment.getRow());
                 });
