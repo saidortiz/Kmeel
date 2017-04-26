@@ -15,6 +15,11 @@ mvn package clean install
 java -jar Kmeel.jar
 ```
 
+## Screenshots
+![](https://i.imgur.com/z5jFgpa.png)
+![](https://i.imgur.com/viP8Ux9.png)
+![](https://i.imgur.com/clTw7vj.png)
+
 ## Plugins
 Kmeel uses [pf4j](https://github.com/decebals/pf4j) which allows you to easily create plugins. <br/>
 Once you've read how pf4j works simply implement any interface from [here](https://github.com/Marten4n6/Kmeel/tree/master/KmeelAPI/src/main/java/com/github/kmeel/api/spi). <br/>
