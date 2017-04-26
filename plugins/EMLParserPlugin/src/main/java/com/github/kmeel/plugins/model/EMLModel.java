@@ -24,6 +24,7 @@ import com.github.kmeel.plugins.Utils;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.mail.util.MimeMessageParser;
 import org.apache.lucene.document.Document;
@@ -49,6 +50,8 @@ import java.util.stream.Collectors;
 public class EMLModel {
 
     private KmeelAPI kmeelAPI;
+
+    private @Getter HashMap<ID, InputStream> attachmentFromID = new HashMap<>();
 
     public EMLModel(KmeelAPI kmeelAPI) {
         this.kmeelAPI = kmeelAPI;
@@ -220,7 +223,7 @@ public class EMLModel {
 
                                     @Override
                                     public ID getID() {
-                                        return id;
+                                        return Utils.getID(attachment);
                                     }
                                 };
                             }

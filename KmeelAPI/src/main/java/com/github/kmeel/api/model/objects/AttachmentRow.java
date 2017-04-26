@@ -35,7 +35,7 @@ public interface AttachmentRow {
     String getModificationTime();
 
     /**
-     * ID that identifies this AttachmentRow
+     * ID of the attachment.
      */
     ID getID();
 

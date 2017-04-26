@@ -29,6 +29,7 @@ import com.github.kmeel.api.spi.listeners.MessageListener;
 import com.github.kmeel.api.view.LoadingView;
 import com.github.kmeel.api.view.MessagePane;
 import com.github.kmeel.plugins.handlers.AttachmentSelectionHandler;
+import com.github.kmeel.plugins.handlers.MessageSelectionHandler;
 import com.github.kmeel.plugins.handlers.TreeSelectionHandler;
 import com.github.kmeel.plugins.model.EMLIndexer;
 import com.github.kmeel.plugins.model.EMLModel;
@@ -196,24 +197,12 @@ public class EMLParserPlugin extends Plugin {
 
         @Override
         public void messageSelected(MessagePane messagePane, ID id) {
-            Message message = getMessage(id);
-
-            if (message != null) {
-                List<MessageAttachment> attachments = message.getAttachments();
-
-                messagePane.setBodyText(message.getBody().replaceAll("\n", "<br/>"));
-                messagePane.setHeadersText(message.getHeaders().replaceAll("\n", "<br/>"));
-                messagePane.setAttachmentTabAmount(attachments.size());
-
-                attachments.forEach(attachment -> {
-                    messagePane.getAttachmentsTable().getItems().add(attachment.getRow());
-                });
-            }
+            new MessageSelectionHandler(emlModel).handle(messagePane, id);
         }
 
         @Override
         public void attachmentSelected(MessagePane messagePane) {
-            //new AttachmentSelectionHandler(messagePane).handle();
+            new AttachmentSelectionHandler(emlModel).handle(messagePane);
         }
 
         @Override

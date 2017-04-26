@@ -21,6 +21,7 @@ package com.github.kmeel.plugins;
 import com.github.kmeel.api.model.objects.ID;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
@@ -55,5 +56,10 @@ public class Utils {
             log.error(ex.getMessage(), ex);
             return null;
         }
+    }
+
+    public static ID getID(DataSource dataSource) {
+        String unencodedID = dataSource.getName() + dataSource.getContentType();
+        return new ID(Base64.getEncoder().encodeToString(unencodedID.getBytes(StandardCharsets.UTF_8)));
     }
 }
