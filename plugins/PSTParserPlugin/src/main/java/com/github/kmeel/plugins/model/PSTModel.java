@@ -19,10 +19,7 @@
 package com.github.kmeel.plugins.model;
 
 import com.github.kmeel.api.KmeelAPI;
-import com.github.kmeel.api.model.objects.ID;
-import com.github.kmeel.api.model.objects.MessageAttachment;
-import com.github.kmeel.api.model.objects.MessageRow;
-import com.github.kmeel.api.spi.Message;
+import com.github.kmeel.api.model.objects.*;
 import com.github.kmeel.plugins.Utils;
 import com.github.kmeel.plugins.model.object.PSTFileID;
 import com.github.kmeel.plugins.model.object.TreeObject;
@@ -54,7 +51,7 @@ public class PSTModel {
     private static final PSTModel INSTANCE = new PSTModel();
 
     private @Getter HashMap<String, PSTFile> fileFromHash = new HashMap<>();
-    private @Getter HashMap<String, InputStream> attachmentFromID = new HashMap<>();
+    private @Getter HashMap<ID, InputStream> attachmentFromID = new HashMap<>();
 
     private PSTModel() {}
 
@@ -85,12 +82,12 @@ public class PSTModel {
     /**
      * @return A list of IDs from the specified node
      */
-    public Set<String> getFromNode(KmeelAPI kmeelAPI, TreeItem treeItem) {
+    public Set<ID> getFromNode(KmeelAPI kmeelAPI, TreeItem treeItem) {
         if (!(treeItem.getValue() instanceof TreeObject) || treeItem.getValue() == null) return null;
 
         try {
             TreeObject treeObject = (TreeObject) treeItem.getValue();
-            Set<String> messageIDs = new HashSet<>();
+            Set<ID> messageIDs = new HashSet<>();
 
             Query query = new TermQuery(new Term("PSTFolderID", treeObject.getFolderID()));
             ScoreDoc[] hits = kmeelAPI.searcher().search(query, Integer.MAX_VALUE).scoreDocs;
@@ -99,7 +96,7 @@ public class PSTModel {
                 Document document = kmeelAPI.searcher().getDocument(hits[i].doc);
 
                 if (document.get("PSTFolderID").equals(treeObject.getFolderID())) {
-                    messageIDs.add(document.get("ID"));
+                    messageIDs.add(new ID(document.get("ID")));
                 }
             }
 
@@ -107,7 +104,7 @@ public class PSTModel {
         } catch (Exception ex) {
             // This ID doesn't belong to the PSTParser (hopefully)
             // log.debug(ex.getMessage(), ex);
-            return null;
+            return new HashSet<>(0);
         }
     }
 
@@ -192,32 +189,86 @@ public class PSTModel {
 
             @Override
             public String getHeaders() {
-                PSTObject pstObject = getFromID(kmeelAPI, id);
-                PSTMessage message = (PSTMessage) pstObject;
+                PSTMessage message = (PSTMessage) getFromID(kmeelAPI, id);
 
                 return message.getTransportMessageHeaders().replaceAll("\n", "<br/>");
             }
 
             @Override
             public List<MessageAttachment> getAttachments() {
-                PSTObject pstObject = getFromID(kmeelAPI, id);
-                PSTMessage message = (PSTMessage) pstObject;
+                List<MessageAttachment> attachments = new ArrayList<>();
 
-                if (message.hasAttachments()) {
-                    List<MessageAttachment> attachments = new ArrayList<>();
+                PSTMessage message = (PSTMessage) getFromID(kmeelAPI, id);
 
-                    for (int i = 0; i < message.getNumberOfAttachments(); i++) {
-                        try {
-                            PSTAttachment attachment = message.getAttachment(i);
+                for (int i = 0; i < message.getNumberOfAttachments(); i++) {
+                    try {
+                        PSTAttachment attachment = message.getAttachment(i);
 
-                            attachments.add(new MessageAttachment(Utils.getAttachmentName(attachment), attachment.getFileInputStream(), null));
-                        } catch (PSTException | IOException ex) {
-                            log.error(ex.getMessage());
-                        }
+                        attachments.add(new MessageAttachment() {
+                            @Override
+                            public String getAttachmentName() {
+                                return Utils.getAttachmentName(attachment);
+                            }
+
+                            @Override
+                            public InputStream getInputStream() {
+                                try {
+                                    return attachment.getFileInputStream();
+                                } catch (IOException | PSTException ex) {
+                                    return null;
+                                }
+                            }
+
+                            @Override
+                            public AttachmentRow getRow() {
+                                SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(kmeelAPI.settings().get("DateFormat"));
+
+                                return new AttachmentRow() {
+                                    @Override
+                                    public String getAttachmentName() {
+                                        return Utils.getAttachmentName(attachment);
+                                    }
+
+                                    @Override
+                                    public String getContentType() {
+                                        return attachment.getMimeTag();
+                                    }
+
+                                    @Override
+                                    public String getSize() {
+                                        return Utils.humanReadableByteCount(attachment.getSize());
+                                    }
+
+                                    @Override
+                                    public String getCreationTime() {
+                                        if (attachment.getCreationTime() != null) {
+                                            return DATE_FORMAT.format(attachment.getCreationTime());
+                                        } else {
+                                            return null;
+                                        }
+                                    }
+
+                                    @Override
+                                    public String getModificationTime() {
+                                        if (attachment.getModificationTime() != null) {
+                                            return DATE_FORMAT.format(attachment.getModificationTime());
+                                        } else {
+                                            return null;
+                                        }
+                                    }
+
+                                    @Override
+                                    public ID getID() {
+                                        return PSTModel.getInstance().getID(attachment);
+                                    }
+                                };
+                            }
+                        });
+                    } catch (PSTException | IOException ex) {
+                        log.error(ex.getMessage());
                     }
-                    return attachments;
                 }
-                return null;
+                return attachments;
             }
         };
     }
@@ -228,22 +279,19 @@ public class PSTModel {
      * this is used to retrieve the PSTObject (PSTObject::detectAndLoadPSTObject).
      */
 
-    public String getID(PSTMessage message) {
-        String id = message.getInternetMessageId();
-        return message.getDescriptorNodeId() + " " + DigestUtils.sha1Hex(id);
+    public ID getID(PSTMessage message) {
+        return new ID(message.getDescriptorNodeId() + " " + DigestUtils.sha1Hex(message.getInternetMessageId()));
     }
 
-    public String getID(PSTAppointment appointment) {
-        String id = appointment.getInternetMessageId();
-        return appointment.getDescriptorNodeId() + " " + DigestUtils.sha1Hex(id);
+    public ID getID(PSTAppointment appointment) {
+        return new ID(appointment.getDescriptorNodeId() + " " + DigestUtils.sha1Hex(appointment.getInternetMessageId()));
     }
 
-    public String getID(PSTContact contact) {
-        String id = contact.getInternetMessageId();
-        return contact.getDescriptorNodeId() + " " + DigestUtils.sha1Hex(id);
+    public ID getID(PSTContact contact) {
+        return new ID(contact.getDescriptorNodeId() + " " + DigestUtils.sha1Hex(contact.getInternetMessageId()));
     }
 
-    public String getID(PSTAttachment attachment) {
-        return DigestUtils.sha1Hex(attachment.getLongFilename() + attachment.getDescriptorNodeId());
+    public ID getID(PSTAttachment attachment) {
+        return new ID(DigestUtils.sha1Hex(attachment.getLongFilename() + attachment.getDescriptorNodeId()));
     }
 }

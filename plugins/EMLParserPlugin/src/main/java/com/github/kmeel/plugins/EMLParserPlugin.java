@@ -22,12 +22,13 @@ import com.github.kmeel.api.KmeelAPI;
 import com.github.kmeel.api.model.objects.AttachmentRow;
 import com.github.kmeel.api.model.objects.ID;
 import com.github.kmeel.api.model.objects.MessageAttachment;
-import com.github.kmeel.api.spi.Message;
+import com.github.kmeel.api.model.objects.Message;
 import com.github.kmeel.api.spi.Parser;
 import com.github.kmeel.api.spi.PluginableFileTree;
 import com.github.kmeel.api.spi.listeners.MessageListener;
 import com.github.kmeel.api.view.LoadingView;
 import com.github.kmeel.api.view.MessagePane;
+import com.github.kmeel.plugins.handlers.AttachmentSelectionHandler;
 import com.github.kmeel.plugins.handlers.TreeSelectionHandler;
 import com.github.kmeel.plugins.model.EMLIndexer;
 import com.github.kmeel.plugins.model.EMLModel;
@@ -43,7 +44,6 @@ import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
 import ro.fortsoft.pf4j.PluginWrapper;
 
-import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.awt.event.ActionListener;
@@ -51,7 +51,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -200,7 +199,6 @@ public class EMLParserPlugin extends Plugin {
             Message message = getMessage(id);
 
             if (message != null) {
-                MimeMessage mimeMessage = emlModel.getFromID(id);
                 List<MessageAttachment> attachments = message.getAttachments();
 
                 messagePane.setBodyText(message.getBody().replaceAll("\n", "<br/>"));
@@ -208,28 +206,18 @@ public class EMLParserPlugin extends Plugin {
                 messagePane.setAttachmentTabAmount(attachments.size());
 
                 attachments.forEach(attachment -> {
-                    try {
-                        DataSource dataSource = (DataSource) attachment.getOptionalObject();
-
-                        messagePane.getAttachmentsTable().getItems().add(new AttachmentRow(
-                                attachment.getAttachmentName(),
-                                dataSource.getContentType(),
-                                Utils.humanReadableByteCount(mimeMessage.getSize()),
-                                id.getId()));
-                    } catch (MessagingException ex) {
-                        log.error(ex.getMessage(), ex);
-                    }
+                    messagePane.getAttachmentsTable().getItems().add(attachment.getRow());
                 });
             }
         }
 
         @Override
         public void attachmentSelected(MessagePane messagePane) {
+            //new AttachmentSelectionHandler(messagePane).handle();
         }
 
         @Override
-        public void addTreeItem(CheckBoxTreeItem treeItem) {
-        }
+        public void addTreeItem(CheckBoxTreeItem treeItem) {}
 
         @Override
         public void treeSelectionUpdate(CheckBoxTreeItem<Object> updatedItem, boolean removed, MessagePane messagePane) {

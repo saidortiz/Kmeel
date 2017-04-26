@@ -24,7 +24,7 @@ import com.github.kmeel.api.model.objects.Case;
 import com.github.kmeel.api.model.objects.ID;
 import com.github.kmeel.api.model.objects.MessageAttachment;
 import com.github.kmeel.api.model.objects.MessageRow;
-import com.github.kmeel.api.spi.Message;
+import com.github.kmeel.api.model.objects.Message;
 import com.github.kmeel.api.spi.Report;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;

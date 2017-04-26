@@ -20,6 +20,7 @@ package com.github.kmeel.api.spi;
 
 import com.github.kmeel.api.KmeelAPI;
 import com.github.kmeel.api.model.objects.ID;
+import com.github.kmeel.api.model.objects.Message;
 import com.github.kmeel.api.view.LoadingView;
 import ro.fortsoft.pf4j.ExtensionPoint;
 

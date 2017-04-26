@@ -35,7 +35,10 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Marten4n6
@@ -126,24 +129,26 @@ class WhateverTab {
         // Listeners
         tab.selectedProperty().addListener((ObservableValue<? extends Boolean> observableValue, Boolean oldValue, Boolean newValue) -> {
             if (newValue && comboBox.getItems().isEmpty())
-                updateEXIF(((TabData) tab.getUserData()).getSelectedID()); //Tab is clicked
+                updateEXIF(((TabData) tab.getUserData()).getSelectedID()); // Tab is clicked
         });
         comboBox.setOnAction((event) -> {
             if (comboBox.getSelectionModel().getSelectedItem() != null) {
                 MessageAttachment selectedAttachment = comboBox.getSelectionModel().getSelectedItem();
-                File outputFile = new File(OSUtils.getTempPath() + "EXIF" + File.separator + selectedAttachment.getAttachmentName());
+                File outputFile = new File(OSUtils.getTempPath() + "EXIF" + File.separator + UUID.randomUUID().toString().replaceAll("-", ""));
 
-                if (!outputFile.exists()) {
-                    try {
-                        FileUtils.copyInputStreamToFile(selectedAttachment.getInputStream(), outputFile);
-                        outputFile.deleteOnExit();
-                    } catch (IOException ex) {
-                        log.error(ex.getMessage(), ex);
-                    }
+                try {
+                    if (outputFile.exists()) Files.delete(Paths.get(outputFile.getPath()));
+
+                    FileUtils.copyInputStreamToFile(selectedAttachment.getInputStream(), outputFile);
+                    outputFile.deleteOnExit();
+                } catch (IOException ex) {
+                    log.error(ex.getMessage(), ex);
                 }
 
                 textArea.clear();
-                exifParser.parse(outputFile).entrySet().forEach(entry -> textArea.appendText(entry.getKey().getName() + " : " + entry.getValue() + "\n"));
+                exifParser.parse(outputFile).entrySet().forEach(entry -> {
+                    textArea.appendText(entry.getKey().getName() + " : " + entry.getValue() + "\n");
+                });
 
                 if (textArea.getText().trim().isEmpty()) textArea.setText("No EXIF data found.");
             }

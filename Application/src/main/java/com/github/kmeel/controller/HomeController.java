@@ -33,6 +33,7 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -44,6 +45,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -55,7 +57,7 @@ public class HomeController {
 
     private HomeTab homeTab;
 
-    private KmeelAPI kmeelAPI;
+    private @Getter KmeelAPI kmeelAPI;
     private FinishedListener onFinishedParsing;
 
     public HomeController(HomeTab homeTab) {
@@ -71,80 +73,52 @@ public class HomeController {
             newCaseStage.show();
 
             newCaseStage.setOnCreateCase((event2) -> {
-                // Create Case
-                if (Cases.getNames().contains(newCaseStage.getName())) {
-                    new Alert(Alert.AlertType.ERROR, "A case with this name already exists.", ButtonType.CLOSE).showAndWait();
-                } else if (newCaseStage.getName().trim().isEmpty() || newCaseStage.getName().contains("'")) {
-                    new Alert(Alert.AlertType.ERROR, "Invalid case name.", ButtonType.CLOSE).showAndWait();
-                } else if (newCaseStage.getInvestigator().trim().isEmpty() || newCaseStage.getInvestigator().contains("'")) {
-                    new Alert(Alert.AlertType.ERROR, "Invalid investigator name.", ButtonType.CLOSE).showAndWait();
-                } else if (newCaseStage.getSources().isEmpty()) {
-                    new Alert(Alert.AlertType.ERROR, "Invalid data source.", ButtonType.CLOSE).showAndWait();
-                } else {
-                    kmeelAPI = newCaseStage.getKmeelAPI();
+                kmeelAPI = newCaseStage.getKmeelAPI();
 
-                    List<String> sources = newCaseStage.getSources();
-                    long sourceSize = getSourceSize(kmeelAPI, sources, newCaseStage.isSubFoldersSelected());
+                // Disable plugins
+                if (!kmeelAPI.getCaseObject().getDisabledPlugins().isEmpty()) {
+                    int disabledPlugins = kmeelAPI.getCaseObject().getDisabledPlugins().size();
 
-                    Case caseObject = new Case(
-                            newCaseStage.getName(),
-                            newCaseStage.getDescription(),
-                            newCaseStage.getInvestigator(),
-                            humanReadableByteCount(sourceSize),
-                            newCaseStage.getHashType(),
-                            sources);
+                    kmeelAPI.getCaseObject().getDisabledPlugins().forEach(pluginName -> {
+                        kmeelAPI.plugins().getPluginManager().unloadPlugin(pluginName);
+                    });
 
-                    if (new File(sources.get(0)).isDirectory()) caseObject.setParseSubFolders(newCaseStage.isSubFoldersSelected());
-
-                    kmeelAPI.setCase(caseObject);
-                    Cases.setCurrentCase(caseObject);
-                    Cases.createCase(caseObject);
-
-                    kmeelAPI.settings().set("SearchLimit", "0");
-                    kmeelAPI.settings().set("DateFormat", "EEE, d MMM yyyy HH:mm:ss");
-                    kmeelAPI.settings().set("DisabledPlugins", new Gson().toJson(newCaseStage.getDisabledPlugins()));
-
-                    // Disable plugins
-                    if (!newCaseStage.getDisabledPlugins().isEmpty()) {
-                        int disabledPlugins = newCaseStage.getDisabledPlugins().size();
-
-                        newCaseStage.getDisabledPlugins().forEach(pluginName -> kmeelAPI.plugins().getPluginManager().unloadPlugin(pluginName));
-
-                        switch (disabledPlugins) {
-                            case 1:
-                                log.info("Disabled " + disabledPlugins + " plugin.");
-                                break;
-                            default:
-                                log.info("Disabled " + disabledPlugins + " plugins.");
-                                break;
-                        }
+                    switch (disabledPlugins) {
+                        case 1:
+                            log.info("Disabled " + disabledPlugins + " plugin.");
+                            break;
+                        default:
+                            log.info("Disabled " + disabledPlugins + " plugins.");
+                            break;
                     }
-
-                    newCaseStage.close();
-
-                    if (newCaseStage.isOpenCaseSelected()) {
-                        LoadingView loadingView = new LoadingView();
-
-                        kmeelAPI.plugins().getPluginManager().getExtensions(Parser.class).forEach(parser -> {
-                            parser.setup(kmeelAPI, loadingView);
-                        });
-                        loadingView.show();
-
-                        FileParser fileParser = new FileParser(kmeelAPI, loadingView);
-
-                        fileParser.setFinishedListener((arg1, arg2) -> {
-                            onFinishedParsing.finished(arg1, arg2);
-                        });
-
-                        if (new File(caseObject.getSources().get(0)).isDirectory()) {
-                            fileParser.parseDirectory(new File(caseObject.getSources().get(0)), caseObject.getParseSubFolders());
-                        } else {
-                            fileParser.parseFiles(caseObject.getSources());
-                        }
-                    }
-
-                    Platform.runLater(() -> homeTab.getTable().getItems().add(caseObject));
                 }
+
+                Platform.runLater(newCaseStage::close);
+
+                if (newCaseStage.isOpenCaseSelected()) {
+                    Cases.setCurrentCase(kmeelAPI.getCaseObject());
+
+                    LoadingView loadingView = new LoadingView();
+
+                    kmeelAPI.plugins().getPluginManager().getExtensions(Parser.class).forEach(parser -> {
+                        parser.setup(kmeelAPI, loadingView);
+                    });
+                    loadingView.show();
+
+                    FileParser fileParser = new FileParser(kmeelAPI, loadingView);
+
+                    fileParser.setFinishedListener((arg1, arg2) -> {
+                        onFinishedParsing.finished(arg1, arg2);
+                    });
+
+                    if (new File(kmeelAPI.getCaseObject().getSources().get(0)).isDirectory()) {
+                        fileParser.parseDirectory(new File(kmeelAPI.getCaseObject().getSources().get(0)), kmeelAPI.getCaseObject().getHasSubFolders());
+                    } else {
+                        fileParser.parseFiles(kmeelAPI.getCaseObject().getSources());
+                    }
+                }
+
+                Platform.runLater(() -> homeTab.getTable().getItems().add(kmeelAPI.getCaseObject()));
             });
         });
         homeTab.setOnOpenCase((event) -> {
@@ -152,6 +126,7 @@ public class HomeController {
                 Case caseObject = homeTab.getTable().getSelectionModel().getSelectedItem();
 
                 kmeelAPI = new KmeelAPI(caseObject);
+
                 Cases.setCurrentCase(caseObject);
 
                 // Check if source exists
@@ -181,14 +156,15 @@ public class HomeController {
                     }
                 }
 
-                ArrayList<String> disabledPlugins = new Gson().fromJson(kmeelAPI.settings().get("DisabledPlugins"), ArrayList.class);
-                if (!disabledPlugins.isEmpty()) {
-                    disabledPlugins.forEach(pluginName -> kmeelAPI.plugins().getPluginManager().unloadPlugin(pluginName));
+                if (!caseObject.getDisabledPlugins().isEmpty()) {
+                    caseObject.getDisabledPlugins().forEach(pluginName -> {
+                        kmeelAPI.plugins().getPluginManager().unloadPlugin(pluginName);
+                    });
 
-                    if (disabledPlugins.size() > 1) {
-                        log.info("Disabled " + disabledPlugins.size() + " plugins.");
+                    if (caseObject.getDisabledPlugins().size() > 1) {
+                        log.info("Disabled " + caseObject.getDisabledPlugins().size() + " plugins.");
                     } else {
-                        log.info("Disabled " + disabledPlugins.size() + " plugin.");
+                        log.info("Disabled " + caseObject.getDisabledPlugins().size() + " plugin.");
                     }
                 }
 
@@ -206,7 +182,7 @@ public class HomeController {
                 });
 
                 if (new File(caseObject.getSources().get(0)).isDirectory()) {
-                    fileParser.parseDirectory(new File(caseObject.getSources().get(0)), caseObject.getParseSubFolders());
+                    fileParser.parseDirectory(new File(caseObject.getSources().get(0)), caseObject.getHasSubFolders());
                 } else {
                     fileParser.parseFiles(caseObject.getSources());
                 }
@@ -222,7 +198,11 @@ public class HomeController {
                     kmeelAPI.database().getDataSource().close();
                 }
 
-                Cases.remove(caseName);
+                try {
+                    FileUtils.deleteDirectory(new File(OSUtils.getCasePath(caseName)));
+                } catch (IOException ex) {
+                    log.error(ex.getMessage());
+                }
 
                 Platform.runLater(() -> {
                     homeTab.getTable().getItems().remove(homeTab.getTable().getSelectionModel().getSelectedItem());
@@ -233,57 +213,6 @@ public class HomeController {
                 new Alert(Alert.AlertType.ERROR, "No case selected.", ButtonType.CLOSE).showAndWait();
             }
         });
-    }
-
-    /**
-     * @return A human readable byte size
-     */
-    private String humanReadableByteCount(long bytes) {
-        boolean si = false;
-        int unit = si ? 1000 : 1024;
-        if (bytes < unit) return bytes + " B";
-        int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
-        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
-    }
-
-    private long getSourceSize(KmeelAPI kmeelAPI, List<String> sources, boolean extractSubFolders) {
-        final AtomicLong sourceSize = new AtomicLong(0);
-
-        if (new File(sources.get(0)).isDirectory()) {
-            try {
-                Files.walkFileTree(Paths.get(sources.get(0)), new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-                        if (kmeelAPI.messages().getSupportedFileExtensions().contains(FilenameUtils.getExtension(path.toString()).toLowerCase())) {
-                            sourceSize.addAndGet(path.toFile().length());
-                        }
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
-                        if (!extractSubFolders && !path.toString().equals(sources.get(0))) {
-                            return FileVisitResult.SKIP_SUBTREE;
-                        } else {
-                            return FileVisitResult.CONTINUE;
-                        }
-                    }
-
-                    @Override
-                    public FileVisitResult visitFileFailed(Path file, IOException ex) {
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            } catch (IOException ex) {
-                log.error(ex.getMessage(), ex);
-            }
-        } else {
-            for (String source : sources) {
-                sourceSize.addAndGet(new File(source).length());
-            }
-        }
-        return sourceSize.get();
     }
 
     public void setOnFinishedParsing(FinishedListener listener) {

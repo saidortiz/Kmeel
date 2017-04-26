@@ -61,17 +61,17 @@ public class TreeSelectionHandler {
 
             // Get all messages from the selected tree item then add them to the MessagePane
             if (treeItem.getValue() != null && treeItem.getValue() instanceof TreeObject) {
-                Set<String> messagesFromNode = PSTModel.getInstance().getFromNode(kmeelAPI, treeItem);
+                Set<ID> messagesFromNode = PSTModel.getInstance().getFromNode(kmeelAPI, treeItem);
 
                 if (messagesFromNode != null) {
-                    for (String id : messagesFromNode) {
+                    for (ID id : messagesFromNode) {
 
                         if (removed) {
                             Platform.runLater(() -> {
-                                messagePane.getTable().getItems().removeIf(item -> item.getId().equals(new ID(id)));
+                                messagePane.getTable().getItems().removeIf(item -> item.getId().equals(id));
                             });
                         } else {
-                            rows.add(PSTModel.getInstance().getMessage(kmeelAPI, new ID(id)).getRow());
+                            rows.add(PSTModel.getInstance().getMessage(kmeelAPI, id).getRow());
                         }
                     }
 

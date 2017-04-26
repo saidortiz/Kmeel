@@ -18,6 +18,7 @@
 
 package com.github.kmeel.plugins;
 
+import com.github.kmeel.api.model.objects.ID;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.mail.MessagingException;
@@ -46,13 +47,13 @@ public class Utils {
     /**
      * @return A Base64 ID of the MimeMessage
      */
-    public static String getID(MimeMessage mimeMessage) {
+    public static ID getID(MimeMessage mimeMessage) {
         try {
             String unencodedID = mimeMessage.getMessageID();
-            return Base64.getEncoder().encodeToString(unencodedID.getBytes(StandardCharsets.UTF_8));
+            return new ID(Base64.getEncoder().encodeToString(unencodedID.getBytes(StandardCharsets.UTF_8)));
         } catch (MessagingException ex) {
             log.error(ex.getMessage(), ex);
-            return "";
+            return null;
         }
     }
 }

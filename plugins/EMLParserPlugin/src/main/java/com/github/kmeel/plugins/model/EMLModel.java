@@ -19,10 +19,7 @@
 package com.github.kmeel.plugins.model;
 
 import com.github.kmeel.api.KmeelAPI;
-import com.github.kmeel.api.model.objects.ID;
-import com.github.kmeel.api.model.objects.MessageAttachment;
-import com.github.kmeel.api.model.objects.MessageRow;
-import com.github.kmeel.api.spi.Message;
+import com.github.kmeel.api.model.objects.*;
 import com.github.kmeel.plugins.Utils;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -41,6 +38,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,8 +72,8 @@ public class EMLModel {
     /**
      * @return A list of message IDs from the specified folder
      */
-    public Set<String> getFromFolder(String folderPath) {
-        Set<String> messageIDs = new HashSet<>();
+    public Set<ID> getFromFolder(String folderPath) {
+        Set<ID> messageIDs = new HashSet<>();
 
         try {
             Query query = new TermQuery(new Term("FolderPath", folderPath));
@@ -86,7 +84,7 @@ public class EMLModel {
                 Document document = kmeelAPI.searcher().getDocument(hits[i].doc);
 
                 if (document.get("FolderPath").equals(folderPath)) {
-                    messageIDs.add(document.get("ID"));
+                    messageIDs.add(new ID(document.get("ID")));
                 }
             }
         } catch (IOException ex) {
@@ -95,6 +93,10 @@ public class EMLModel {
         return messageIDs;
     }
 
+    /**
+     * @return The Message from the specified ID
+     * @see Message
+     */
     public Message getMessage(ID id) {
         if (getFromID(id) == null) return null;
 
@@ -161,16 +163,68 @@ public class EMLModel {
             @Override
             public List<MessageAttachment> getAttachments() {
                 try {
-                    MimeMessage message = new MimeMessage(getFromID(id));
-                    MimeMessageParser parser = new MimeMessageParser(message).parse();
                     List<MessageAttachment> attachments = new ArrayList<>();
 
+                    MimeMessage message = new MimeMessage(getFromID(id));
+                    MimeMessageParser parser = new MimeMessageParser(message).parse();
+
                     parser.getAttachmentList().forEach(attachment -> {
-                        try {
-                            attachments.add(new MessageAttachment(attachment.getName(), attachment.getInputStream(), attachment));
-                        } catch (IOException ex) {
-                            log.error(ex.getMessage(), ex);
-                        }
+                        attachments.add(new MessageAttachment() {
+                            @Override
+                            public String getAttachmentName() {
+                                return attachment.getName();
+                            }
+
+                            @Override
+                            public InputStream getInputStream() {
+                                try {
+                                    return attachment.getInputStream();
+                                } catch (IOException ex) {
+                                    log.error(ex.getMessage());
+                                    return null;
+                                }
+                            }
+
+                            @Override
+                            public AttachmentRow getRow() {
+                                return new AttachmentRow() {
+                                    @Override
+                                    public String getAttachmentName() {
+                                        return attachment.getName();
+                                    }
+
+                                    @Override
+                                    public String getContentType() {
+                                        return attachment.getContentType();
+                                    }
+
+                                    @Override
+                                    public String getSize() {
+                                        try {
+                                            return Utils.humanReadableByteCount(message.getSize());
+                                        } catch (MessagingException ex) {
+                                            log.warn(ex.getMessage());
+                                            return null;
+                                        }
+                                    }
+
+                                    @Override
+                                    public String getCreationTime() {
+                                        return null;
+                                    }
+
+                                    @Override
+                                    public String getModificationTime() {
+                                        return null;
+                                    }
+
+                                    @Override
+                                    public ID getID() {
+                                        return id;
+                                    }
+                                };
+                            }
+                        });
                     });
 
                     return attachments;

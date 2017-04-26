@@ -20,6 +20,7 @@ package com.github.kmeel.plugins.handlers;
 
 import com.github.kmeel.api.KmeelAPI;
 import com.github.kmeel.api.model.objects.ID;
+import com.github.kmeel.api.model.objects.Message;
 import com.github.kmeel.api.view.MessagePane;
 import com.github.kmeel.api.view.objects.Footer;
 import com.github.kmeel.plugins.Utils;
@@ -45,90 +46,24 @@ public class MessageClickedHandler {
     }
 
     public void handle(MessagePane messagePane, ID id) {
-        PSTObject pstObject = PSTModel.getInstance().getFromID(kmeelAPI, id);
-        SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(kmeelAPI.settings().get("DateFormat"));
+        Message message = PSTModel.getInstance().getMessage(kmeelAPI, id);
 
-        PSTModel.getInstance().getAttachmentFromID().clear();
+        if (message != null) {
+            messagePane.setBodyText(message.getBody());
+            messagePane.setHeadersText(message.getHeaders());
+            messagePane.setAttachmentTabAmount(message.getAttachments().size());
 
-        if (pstObject != null) {
-            if (pstObject instanceof PSTAppointment) {
-                // Appointment
-                PSTAppointment appointment = (PSTAppointment) pstObject;
+            message.getAttachments().forEach(attachment -> {
+                PSTModel.getInstance().getAttachmentFromID().put(attachment.getRow().getID(), attachment.getInputStream());
 
-                messagePane.setBodyText(Utils.getBody(DATE_FORMAT, appointment));
-                messagePane.setHeadersText(appointment.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
+                log.debug("Putting inputstream from ID: " + attachment.getRow().getID() + " = " + attachment.getInputStream());
 
-                if (appointment.hasAttachments()) {
-                    messagePane.setAttachmentTabAmount(appointment.getNumberOfAttachments());
-
-                    for (int i = 0; i < appointment.getNumberOfAttachments(); i++) {
-                        try {
-                            PSTAttachment attachment = appointment.getAttachment(i);
-
-                            PSTModel.getInstance().getAttachmentFromID().put(PSTModel.getInstance().getID(attachment), attachment.getFileInputStream());
-                            Platform.runLater(() -> messagePane.getAttachmentsTable().getItems().add(Utils.getAttachmentRow(attachment, DATE_FORMAT)));
-                        } catch (IOException | PSTException ex) {
-                            log.error(ex.getMessage(), ex);
-                        }
-                    }
-                }
-            } else if (pstObject instanceof PSTContact) {
-                // Contact
-                PSTContact contact = (PSTContact) pstObject;
-
-                messagePane.setBodyText(Utils.getBody(DATE_FORMAT, contact));
-                messagePane.setHeadersText(contact.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
-
-                if (contact.hasAttachments()) {
-                    messagePane.setAttachmentTabAmount(contact.getNumberOfAttachments());
-
-                    for (int i = 0; i < contact.getNumberOfAttachments(); i++) {
-                        try {
-                            PSTAttachment attachment = contact.getAttachment(i);
-
-                            PSTModel.getInstance().getAttachmentFromID().put(PSTModel.getInstance().getID(attachment), attachment.getFileInputStream());
-                            Platform.runLater(() -> messagePane.getAttachmentsTable().getItems().add(Utils.getAttachmentRow(attachment, DATE_FORMAT)));
-                        } catch (IOException | PSTException ex) {
-                            log.error(ex.getMessage(), ex);
-                        }
-                    }
-                }
-            } else if (pstObject instanceof PSTTask) {
-                // Task
-                PSTTask task = (PSTTask) pstObject;
-
-                messagePane.setBodyText(Utils.getBody(DATE_FORMAT, task));
-                messagePane.setHeadersText(task.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
-            } else if (pstObject instanceof PSTRss) {
-                // RSS
-                log.error("RSS clicked, not yet supported.");
-            } else if (pstObject instanceof PSTActivity) {
-                // Activity
-                log.error("Activity clicked, not yet supported.");
-            } else {
-                // Message
-                PSTMessage message = (PSTMessage) pstObject;
-
-                messagePane.setBodyText(Utils.getBody(DATE_FORMAT, message));
-                messagePane.setHeadersText(message.getTransportMessageHeaders().replaceAll("\n", "<br/>"));
-
-                if (message.hasAttachments()) {
-                    messagePane.setAttachmentTabAmount(message.getNumberOfAttachments());
-
-                    for (int i = 0; i < message.getNumberOfAttachments(); i++) {
-                        try {
-                            PSTAttachment attachment = message.getAttachment(i);
-
-                            PSTModel.getInstance().getAttachmentFromID().put(PSTModel.getInstance().getID(attachment), attachment.getFileInputStream());
-                            Platform.runLater(() -> messagePane.getAttachmentsTable().getItems().add(Utils.getAttachmentRow(attachment, DATE_FORMAT)));
-                        } catch (IOException | PSTException ex) {
-                            log.error(ex.getMessage());
-                        }
-                    }
-                }
-            }
-
-            messagePane.setFooter(new Footer(PSTModel.getInstance().getFolderPath(kmeelAPI, id), kmeelAPI, messagePane.getTable()));
+                Platform.runLater(() -> {
+                    messagePane.getAttachmentsTable().getItems().add(attachment.getRow());
+                });
+            });
         }
+
+        messagePane.setFooter(new Footer(PSTModel.getInstance().getFolderPath(kmeelAPI, id), kmeelAPI, messagePane.getTable()));
     }
 }

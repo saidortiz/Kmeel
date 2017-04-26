@@ -24,13 +24,13 @@ import java.util.List;
 
 /**
  * @author Marten4n6
- *         This class stores information about the case
+ *         This class stores information about the case.
  */
 @Data
 public class Case {
 
-    private final String name, description, investigator, size, hashType;
-    private final List<String> sources;
+    private final String name, description, investigator, size;
+    private final List<String> sources, disabledPlugins;
     private boolean indexed = false;
-    private Boolean parseSubFolders = false;
+    private Boolean hasSubFolders = false;
 }

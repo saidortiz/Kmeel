@@ -58,16 +58,16 @@ public class TreeSelectionHandler {
 
             if (treeItem.getValue() != null && treeItem.getValue() instanceof TreeObject) {
                 TreeObject treeObject = (TreeObject) treeItem.getValue();
-                Set<String> messagesFromNode = emlModel.getFromFolder(treeObject.getFolderPath());
+                Set<ID> messagesFromNode = emlModel.getFromFolder(treeObject.getFolderPath());
 
                 if (messagesFromNode != null) {
-                    for (String id : messagesFromNode) {
+                    for (ID id : messagesFromNode) {
                         if (removed) {
                             Platform.runLater(() -> {
-                                messagePane.getTable().getItems().removeIf(item -> item.getId().equals(new ID(id)));
+                                messagePane.getTable().getItems().removeIf(item -> item.getId().equals(id));
                             });
                         } else {
-                            rows.add(emlModel.getMessage(new ID(id)).getRow());
+                            rows.add(emlModel.getMessage(id).getRow());
                         }
                     }
 

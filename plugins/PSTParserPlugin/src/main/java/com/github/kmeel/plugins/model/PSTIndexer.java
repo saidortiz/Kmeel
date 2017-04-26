@@ -57,7 +57,7 @@ public class PSTIndexer {
         Document document = new Document();
         StringBuilder searchableText = new StringBuilder();
 
-        document.add(new StringField("ID", PSTModel.getInstance().getID(appointment), Field.Store.YES));
+        document.add(new StringField("ID", PSTModel.getInstance().getID(appointment).getId(), Field.Store.YES));
         searchableText.append(" ").append(PSTModel.getInstance().getID(appointment));
 
         document.add(new StringField("PSTFileID", new PSTFileID(pstFile).getId(), Field.Store.YES));
@@ -118,7 +118,7 @@ public class PSTIndexer {
         Document document = new Document();
         StringBuilder searchableText = new StringBuilder();
 
-        document.add(new StringField("ID", PSTModel.getInstance().getID(contact), Field.Store.YES));
+        document.add(new StringField("ID", PSTModel.getInstance().getID(contact).getId(), Field.Store.YES));
         searchableText.append(" ").append(PSTModel.getInstance().getID(contact));
 
         document.add(new StringField("PSTFileID", new PSTFileID(pstFile).getId(), Field.Store.YES));
@@ -154,7 +154,7 @@ public class PSTIndexer {
         Document document = new Document();
         StringBuilder searchableText = new StringBuilder();
 
-        document.add(new StringField("ID", PSTModel.getInstance().getID(message), Field.Store.YES));
+        document.add(new StringField("ID", PSTModel.getInstance().getID(message).getId(), Field.Store.YES));
         searchableText.append(" ").append(PSTModel.getInstance().getID(message));
 
         document.add(new StringField("PSTFileID", new PSTFileID(pstFile).getId(), Field.Store.YES));

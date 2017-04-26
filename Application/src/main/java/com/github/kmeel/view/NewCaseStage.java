@@ -19,7 +19,10 @@
 package com.github.kmeel.view;
 
 import com.github.kmeel.api.KmeelAPI;
+import com.github.kmeel.api.model.Cases;
 import com.github.kmeel.api.model.Plugins;
+import com.github.kmeel.api.model.objects.Case;
+import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -37,31 +40,32 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import ro.fortsoft.pf4j.PluginDescriptor;
 
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Marten4n6
  *         View for creating new cases
  */
+@Slf4j
 public class NewCaseStage extends Stage {
 
     private @Getter KmeelAPI kmeelAPI;
+    private @Getter Case caseObject;
 
-    private TextField caseName;
-    private TextField description;
-    private TextField investigator;
-    private ComboBox<String> hashType;
-    private CheckBox hasSubFolders;
-    private CheckBox open;
-
-    private @Getter List<String> sources = new ArrayList<>();
-    private @Getter List<String> disabledPlugins = new ArrayList<>();
+    private CheckBox checkBoxOpen;
+    private ArrayList<String> disabledPlugins = new ArrayList<>();
 
     private @Setter ActionListener onCreateCase;
 
@@ -74,9 +78,7 @@ public class NewCaseStage extends Stage {
 
         BorderPane borderPane = new BorderPane();
         Scene scene = new Scene(borderPane, 525, 295);
-        TabPane tabPane = new TabPane();
-
-        tabPane.getTabs().addAll(getCaseTab(), getPluginsTab());
+        TabPane tabPane = new TabPane(getCaseTab(), getPluginsTab());
 
         borderPane.setCenter(tabPane);
         this.setScene(scene);
@@ -88,6 +90,8 @@ public class NewCaseStage extends Stage {
         Tab tab = new Tab();
         GridPane gridPane = new GridPane();
 
+        ArrayList<String> sources = new ArrayList<>();
+
         // Tab
         tab.setContent(gridPane);
         tab.setText("Case");
@@ -98,22 +102,19 @@ public class NewCaseStage extends Stage {
         Label labelDescription = new Label("Description:");
         Label labelInvestigator = new Label("Investigator:");
         Label labelSource = new Label("Source:");
-        Label labelHash = new Label("Hash:");
 
         // Fields
-        caseName = new TextField();
-        description = new TextField();
-        investigator = new TextField();
+        TextField fieldCaseName = new TextField();
+        TextField fieldDescription = new TextField();
+        TextField fieldInvestigator = new TextField();
         TextField fieldSource = new TextField();
 
-        investigator.setText(System.getProperty("user.name"));
+        fieldInvestigator.setText(System.getProperty("user.name"));
         fieldSource.setEditable(false);
 
         // Combo Boxes
-        hashType = new ComboBox<>(FXCollections.observableArrayList("SHA-256", "MD5", "SHA1"));
         ComboBox<String> sourceType = new ComboBox<>(FXCollections.observableArrayList("File(s)", "Folder"));
 
-        hashType.setValue("SHA-256");
         sourceType.setValue("File(s)");
 
         // Buttons
@@ -129,20 +130,20 @@ public class NewCaseStage extends Stage {
         // Check Boxes
         HBox hBox = new HBox();
 
-        open = new CheckBox();
-        hasSubFolders = new CheckBox();
+        checkBoxOpen = new CheckBox();
+        CheckBox checkBoxHasSubFolders = new CheckBox();
 
-        open.setText("Open");
-        open.setSelected(true);
+        checkBoxOpen.setText("Open");
+        checkBoxOpen.setSelected(true);
 
-        hasSubFolders.setText("Subfolders");
-        hasSubFolders.setSelected(true);
+        checkBoxHasSubFolders.setText("Subfolders");
+        checkBoxHasSubFolders.setSelected(true);
 
-        hasSubFolders.setVisible(false);
-        hasSubFolders.setManaged(false);
+        checkBoxHasSubFolders.setVisible(false);
+        checkBoxHasSubFolders.setManaged(false);
 
         hBox.setSpacing(10);
-        hBox.getChildren().addAll(open, hasSubFolders);
+        hBox.getChildren().addAll(checkBoxOpen, checkBoxHasSubFolders);
 
         // Layout
         gridPane.setVgap(5);
@@ -159,17 +160,15 @@ public class NewCaseStage extends Stage {
 
         // Add
         gridPane.add(labelName, 0, 0);
-        gridPane.add(caseName, 1, 0);
+        gridPane.add(fieldCaseName, 1, 0);
         gridPane.add(labelDescription, 0, 1);
-        gridPane.add(description, 1, 1);
+        gridPane.add(fieldDescription, 1, 1);
         gridPane.add(labelInvestigator, 0, 2);
-        gridPane.add(investigator, 1, 2);
+        gridPane.add(fieldInvestigator, 1, 2);
         gridPane.add(labelSource, 0, 3);
         gridPane.add(fieldSource, 1, 3);
         gridPane.add(browseSource, 2, 3);
         gridPane.add(sourceType, 3, 3);
-        gridPane.add(labelHash, 0, 4);
-        gridPane.add(hashType, 1, 4);
         gridPane.add(createCase, 1, 5);
         gridPane.add(hBox, 1, 6);
 
@@ -179,9 +178,9 @@ public class NewCaseStage extends Stage {
                 FileChooser fileChooser = new FileChooser();
                 List<String> supportedExtensions = new ArrayList<>();
 
-                fileChooser.setTitle("Kmeel");
-
                 kmeelAPI.messages().getSupportedFileExtensions().forEach(extension -> supportedExtensions.add("*." + extension));
+
+                fileChooser.setTitle("Kmeel");
                 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Supported", supportedExtensions));
 
                 List<File> selectedFiles = fileChooser.showOpenMultipleDialog(null);
@@ -212,15 +211,45 @@ public class NewCaseStage extends Stage {
         });
         sourceType.setOnAction((event) -> {
             if (sourceType.getSelectionModel().getSelectedItem().startsWith("File")) {
-                hasSubFolders.setVisible(false);
-                hasSubFolders.setManaged(false);
+                checkBoxHasSubFolders.setVisible(false);
+                checkBoxHasSubFolders.setManaged(false);
             } else {
-                hasSubFolders.setVisible(true);
-                hasSubFolders.setManaged(true);
+                checkBoxHasSubFolders.setVisible(true);
+                checkBoxHasSubFolders.setManaged(true);
             }
         });
         createCase.setOnAction((event) -> {
-            if (onCreateCase != null) onCreateCase.actionPerformed(null);
+            if (Cases.getNames().contains(fieldCaseName.getText())) {
+                new Alert(Alert.AlertType.ERROR, "A case with this name already exists.", ButtonType.CLOSE).showAndWait();
+            } else if (fieldCaseName.getText().trim().isEmpty()) {
+                new Alert(Alert.AlertType.ERROR, "Invalid case name.", ButtonType.CLOSE).showAndWait();
+            } else if (fieldInvestigator.getText().trim().isEmpty()) {
+                new Alert(Alert.AlertType.ERROR, "Invalid investigator name.", ButtonType.CLOSE).showAndWait();
+            } else if (sources.isEmpty()) {
+                new Alert(Alert.AlertType.ERROR, "Invalid source.", ButtonType.CLOSE).showAndWait();
+            } else {
+                caseObject = new Case(
+                        fieldCaseName.getText(),
+                        fieldDescription.getText(),
+                        fieldInvestigator.getText(),
+                        humanReadableByteCount(getSourceSize(kmeelAPI, sources, checkBoxHasSubFolders.isSelected())),
+                        sources,
+                        disabledPlugins
+                );
+                kmeelAPI.setCase(caseObject);
+
+                if (new File(sources.get(0)).isDirectory()) {
+                    caseObject.setHasSubFolders(checkBoxHasSubFolders.isSelected());
+                }
+
+                Cases.storeCaseObject(caseObject);
+
+                // Default settings
+                kmeelAPI.settings().set("SearchLimit", "0");
+                kmeelAPI.settings().set("DateFormat", "EEE, d MMM yyyy HH:mm:ss");
+
+                onCreateCase.actionPerformed(null);
+            }
         });
         return tab;
     }
@@ -245,7 +274,7 @@ public class NewCaseStage extends Stage {
         TableColumn<PluginDescriptor, String> columnAuthor = new TableColumn<>("Author");
         TableColumn<PluginDescriptor, Boolean> columnEnabled = new TableColumn<>("Enabled");
 
-        HashMap<String, SimpleBooleanProperty> enabledPlugins = new HashMap<>(); //pluginId as key
+        HashMap<String, SimpleBooleanProperty> enabledPlugins = new HashMap<>(); // pluginId as key
 
         kmeelAPI.plugins().getPluginManager().getStartedPlugins().forEach(plugin -> {
             SimpleBooleanProperty booleanProperty = new SimpleBooleanProperty(true);
@@ -283,27 +312,58 @@ public class NewCaseStage extends Stage {
         return tab;
     }
 
-    public String getName() {
-        return caseName.getText();
-    }
-
-    public String getDescription() {
-        return description.getText();
-    }
-
-    public String getInvestigator() {
-        return investigator.getText();
-    }
-
-    public String getHashType() {
-        return hashType.getSelectionModel().getSelectedItem();
-    }
-
-    public boolean isSubFoldersSelected() {
-        return hasSubFolders.isSelected();
-    }
-
     public boolean isOpenCaseSelected() {
-        return open.isSelected();
+        return checkBoxOpen.isSelected();
+    }
+
+    private long getSourceSize(KmeelAPI kmeelAPI, List<String> sources, boolean extractSubFolders) {
+        final AtomicLong sourceSize = new AtomicLong(0);
+
+        if (new File(sources.get(0)).isDirectory()) {
+            try {
+                Files.walkFileTree(Paths.get(sources.get(0)), new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                        if (kmeelAPI.messages().getSupportedFileExtensions().contains(FilenameUtils.getExtension(path.toString()).toLowerCase())) {
+                            sourceSize.addAndGet(path.toFile().length());
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+                        if (!extractSubFolders && !path.toString().equals(sources.get(0))) {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        } else {
+                            return FileVisitResult.CONTINUE;
+                        }
+                    }
+
+                    @Override
+                    public FileVisitResult visitFileFailed(Path file, IOException ex) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            } catch (IOException ex) {
+                log.error(ex.getMessage(), ex);
+            }
+        } else {
+            for (String source : sources) {
+                sourceSize.addAndGet(new File(source).length());
+            }
+        }
+        return sourceSize.get();
+    }
+
+    /**
+     * @return A human readable byte size
+     */
+    private String humanReadableByteCount(long bytes) {
+        boolean si = false;
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 }

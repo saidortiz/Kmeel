@@ -18,7 +18,7 @@
 
 package com.github.kmeel.api.model;
 
-import com.github.kmeel.api.spi.Message;
+import com.github.kmeel.api.model.objects.Message;
 import com.github.kmeel.api.spi.Parser;
 import com.github.kmeel.api.model.objects.ID;
 

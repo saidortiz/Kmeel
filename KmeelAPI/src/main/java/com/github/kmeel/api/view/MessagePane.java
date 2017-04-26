@@ -187,20 +187,20 @@ public class MessagePane {
 
         attachmentsTable = new TableView<>();
         TableColumn<AttachmentRow, String> columnAttachmentName = new TableColumn<>("Name");
-        TableColumn<AttachmentRow, String> columnAttachmentMimeTag = new TableColumn<>("Mime Tag");
+        TableColumn<AttachmentRow, String> columnAttachmentContentType = new TableColumn<>("Content Type");
         TableColumn<AttachmentRow, String> columnAttachmentSize = new TableColumn<>("Size");
         TableColumn<AttachmentRow, String> columnAttachmentCreationTime = new TableColumn<>("Creation Time");
         TableColumn<AttachmentRow, String> columnAttachmentModificationTime = new TableColumn<>("Modification Time");
 
-        columnAttachmentName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        columnAttachmentMimeTag.setCellValueFactory(new PropertyValueFactory<>("mimeTag"));
-        columnAttachmentSize.setCellValueFactory(new PropertyValueFactory<>("size"));
-        columnAttachmentCreationTime.setCellValueFactory(new PropertyValueFactory<>("creationTime"));
-        columnAttachmentModificationTime.setCellValueFactory(new PropertyValueFactory<>("modificationTime"));
+        columnAttachmentName.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getAttachmentName()));
+        columnAttachmentContentType.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getContentType()));
+        columnAttachmentSize.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getSize()));
+        columnAttachmentCreationTime.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getCreationTime()));
+        columnAttachmentModificationTime.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getModificationTime()));
 
         attachmentsTable.setPlaceholder(new Label(""));
         attachmentsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        attachmentsTable.getColumns().addAll(columnAttachmentName, columnAttachmentMimeTag, columnAttachmentSize, columnAttachmentCreationTime, columnAttachmentModificationTime);
+        attachmentsTable.getColumns().addAll(columnAttachmentName, columnAttachmentContentType, columnAttachmentSize, columnAttachmentCreationTime, columnAttachmentModificationTime);
 
         attachmentsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             Platform.runLater(() -> {

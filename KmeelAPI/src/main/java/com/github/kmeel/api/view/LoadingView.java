@@ -45,7 +45,7 @@ public class LoadingView {
         Scene scene = new Scene(borderPane, 500, 364);
 
         // Stage
-        stage.setTitle("Kmeel - Loading");
+        stage.setTitle("Kmeel");
 
         // Scene
         Label labelInformation = new Label("Waiting for parsers to finish...");

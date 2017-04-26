@@ -61,8 +61,9 @@ public class AttachmentClickedHandler {
                 if (confirmOpen.isPresent() && confirmOpen.get() == ButtonType.NO) return;
 
                 AttachmentRow attachmentRow = messagePane.getAttachmentsTable().getSelectionModel().getSelectedItem();
-                InputStream inputStream = PSTModel.getInstance().getAttachmentFromID().get(attachmentRow.getId());
-                Path outputFile = Paths.get(OSUtils.getTempPath() + attachmentRow.getName());
+
+                InputStream inputStream = PSTModel.getInstance().getAttachmentFromID().get(attachmentRow.getID());
+                Path outputFile = Paths.get(OSUtils.getTempPath() + attachmentRow.getAttachmentName());
 
                 try {
                     Files.copy(inputStream, outputFile, StandardCopyOption.REPLACE_EXISTING);

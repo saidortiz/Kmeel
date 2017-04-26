@@ -19,6 +19,7 @@
 package com.github.kmeel.plugins;
 
 import com.github.kmeel.api.model.objects.AttachmentRow;
+import com.github.kmeel.api.model.objects.ID;
 import com.github.kmeel.plugins.model.PSTModel;
 import com.pff.*;
 import com.rtfparserkit.converter.text.StringTextConverter;
@@ -54,7 +55,7 @@ public class Utils {
      */
     public static String getBody(SimpleDateFormat DATE_FORMAT, PSTObject pstObject) {
         if (pstObject instanceof PSTAppointment) {
-            /* Appointment */
+            // Appointment
             PSTAppointment appointment = (PSTAppointment)pstObject;
             StringBuilder builder = new StringBuilder();
 
@@ -88,7 +89,7 @@ public class Utils {
 
             return builder.toString();
         } else if (pstObject instanceof PSTContact) {
-            /* Contact */
+            // Contact
             PSTContact contact = (PSTContact) pstObject;
             StringBuilder builder = new StringBuilder();
 
@@ -213,7 +214,7 @@ public class Utils {
 
             return builder.toString();
         } else if (pstObject instanceof PSTTask) {
-            /* Task */
+            // Task
             PSTTask task = (PSTTask)pstObject;
             StringBuilder builder = new StringBuilder();
 
@@ -239,7 +240,7 @@ public class Utils {
 
             return builder.toString();
         } else {
-            /* Normal message */
+            // Normal message
             PSTMessage message = (PSTMessage) pstObject;
 
             try {
@@ -282,16 +283,5 @@ public class Utils {
         } catch (Exception ex) {
             return rtf;
         }
-    }
-
-    /**
-     * @return Row that can be added to the attachments table
-     */
-    public static AttachmentRow getAttachmentRow(PSTAttachment attachment, SimpleDateFormat DATE_FORMAT) {
-        AttachmentRow row = new AttachmentRow(Utils.getAttachmentName(attachment), attachment.getMimeTag(), Utils.humanReadableByteCount(attachment.getSize()), PSTModel.getInstance().getID(attachment));
-
-        if (attachment.getCreationTime() != null) row.setCreationTime(DATE_FORMAT.format(attachment.getCreationTime()));
-        if (attachment.getLastModificationTime() != null) row.setModificationTime(DATE_FORMAT.format(attachment.getCreationTime()));
-        return row;
     }
 }

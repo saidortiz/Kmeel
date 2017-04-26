@@ -18,14 +18,25 @@
 
 package com.github.kmeel.api.model.objects;
 
-import lombok.*;
-
 /**
  * @author Marten4n6
+ *         Row that can be added to the attachments tab.
  */
-@Data
-public class AttachmentRow {
+public interface AttachmentRow {
 
-    private final String name, mimeTag, size, id;
-    private @Setter String creationTime, modificationTime;
+    String getAttachmentName();
+
+    String getContentType();
+
+    String getSize();
+
+    String getCreationTime();
+
+    String getModificationTime();
+
+    /**
+     * ID that identifies this AttachmentRow
+     */
+    ID getID();
+
 }

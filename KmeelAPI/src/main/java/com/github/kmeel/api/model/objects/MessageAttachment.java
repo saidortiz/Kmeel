@@ -18,18 +18,20 @@
 
 package com.github.kmeel.api.model.objects;
 
-import lombok.Data;
-import lombok.Getter;
-
 import java.io.InputStream;
 
 /**
  * @author Marten4n6
+ *         Attachment of a message.
  */
-@Data
-public class MessageAttachment {
+public interface MessageAttachment {
 
-    private final String attachmentName;
-    private final InputStream inputStream;
-    private final Object optionalObject;
+    String getAttachmentName();
+
+    InputStream getInputStream();
+
+    /**
+     * Row that can be added to the attachments table.
+     */
+    AttachmentRow getRow();
 }

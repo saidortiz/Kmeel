@@ -16,10 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.github.kmeel.api.spi;
-
-import com.github.kmeel.api.model.objects.MessageAttachment;
-import com.github.kmeel.api.model.objects.MessageRow;
+package com.github.kmeel.api.model.objects;
 
 import java.util.List;
 

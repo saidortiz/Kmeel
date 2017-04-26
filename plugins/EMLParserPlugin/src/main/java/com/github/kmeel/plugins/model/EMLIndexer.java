@@ -50,7 +50,7 @@ public class EMLIndexer {
             MimeMessageParser parser = new MimeMessageParser(message).parse();
             Document document = new Document();
             StringBuilder searchableText = new StringBuilder();
-            document.add(new StringField("ID", Utils.getID(message), Field.Store.YES));
+            document.add(new StringField("ID", Utils.getID(message).getId(), Field.Store.YES));
             searchableText.append(" ").append(Utils.getID(message));
 
             // The path to the EML file, used to get the MimeMessage object back

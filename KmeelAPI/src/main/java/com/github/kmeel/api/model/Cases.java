@@ -41,64 +41,43 @@ import java.util.Comparator;
 @Slf4j
 public class Cases {
 
-    private static final Gson gson = new Gson();
+    private static Gson gson = new Gson();
     private static @Getter @Setter Case currentCase;
 
     private Cases() {}
 
-    public static void createCase(@NonNull Case caseObject) {
+    /**
+     * Stores the case object in JSON.
+     */
+    public static void storeCaseObject(@NonNull Case caseObject) {
         new File(OSUtils.getCasePath(caseObject.getName())).mkdir();
 
-        try {
-            @Cleanup Connection connection = new Database(caseObject.getName()).getDataSource().getConnection();
-            @Cleanup Statement statement = connection.createStatement();
+        Path jsonPath = Paths.get(OSUtils.getCasePath(caseObject.getName()) + "Case.json");
 
-            statement.execute("CREATE TABLE IF NOT EXISTS CaseObject(Object)");
-            statement.execute("CREATE TABLE IF NOT EXISTS Bookmarks(CaseName, ID, Other)");
-            statement.execute("CREATE TABLE IF NOT EXISTS Tags(CaseName, ID, TagName)");
+        if (!jsonPath.toFile().exists()) {
+            try {
+                Files.createFile(jsonPath);
 
-            @Cleanup PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO CaseObject(Object) VALUES (?)");
-
-            preparedStatement.setString(1, gson.toJson(caseObject));
-            preparedStatement.executeUpdate();
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+                Files.write(
+                        jsonPath,
+                        gson.toJson(caseObject).getBytes(),
+                        StandardOpenOption.APPEND);
+            } catch (IOException ex) {
+                log.error(ex.getMessage());
+            }
         }
     }
 
     /**
-     * Removes all files belonging to the case.
-     *
-     * @throws NullPointerException if the caseName is null.
-     */
-    public static void remove(@NonNull String caseName) {
-        try {
-            Files.walk(Paths.get(OSUtils.getCasePath(caseName)))
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException ex) {
-                            log.error(ex.getMessage(), ex);
-                        }
-                    });
-        } catch (IOException ex) {
-            log.error(ex.getMessage(), ex);
-        }
-    }
-
-    /**
-     * @return The case object from the case name
+     * @return The case object from the case name otherwise null.
      * @throws NullPointerException if the caseName is null.
      */
     public static Case get(@NonNull String caseName) {
-        try {
-            @Cleanup Connection connection = new Database(caseName).getDataSource().getConnection();
-            @Cleanup Statement statement = connection.createStatement();
-            @Cleanup ResultSet resultSet = statement.executeQuery("SELECT * FROM CaseObject");
+        Path jsonPath = Paths.get(OSUtils.getCasePath(caseName) + "Case.json");
 
-            return gson.fromJson(resultSet.getString("Object"), Case.class);
-        } catch (SQLException ex) {
+        try {
+            return gson.fromJson(Files.readAllLines(jsonPath).get(0), Case.class);
+        } catch (IOException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }

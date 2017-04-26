@@ -21,7 +21,7 @@ package com.github.kmeel.plugins;
 import com.github.kmeel.api.KmeelAPI;
 import com.github.kmeel.api.custom.DefaultContextMenuItems;
 import com.github.kmeel.api.model.objects.ID;
-import com.github.kmeel.api.spi.Message;
+import com.github.kmeel.api.model.objects.Message;
 import com.github.kmeel.api.spi.Parser;
 import com.github.kmeel.api.spi.PluginableFileTree;
 import com.github.kmeel.api.spi.listeners.MessageListener;
