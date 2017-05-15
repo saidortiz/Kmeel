@@ -21,7 +21,6 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.lucene:lucene-queryparser:6.4.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.lucene:lucene-queries:6.4.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.lucene:lucene-sandbox:6.4.2" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: de.jensd:fontawesomefx:8.9" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: ro.fortsoft.pf4j:pf4j:1.1.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.zafarkhaja:java-semver:0.9.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.projectlombok:lombok:1.16.8" level="project" />

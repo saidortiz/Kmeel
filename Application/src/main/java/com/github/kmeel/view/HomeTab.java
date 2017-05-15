@@ -20,14 +20,14 @@ package com.github.kmeel.view;
 
 import com.github.kmeel.api.model.Cases;
 import com.github.kmeel.api.model.objects.Case;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import lombok.Getter;
@@ -57,11 +57,10 @@ public class HomeTab extends Tab{
         VBox vBox = new VBox();
 
         // Tab
-        FontAwesomeIconView homeIcon = new FontAwesomeIconView(FontAwesomeIcon.HOME);
+        ImageView homeIcon = new ImageView(new Image(this.getClass().getResourceAsStream("/images/home.png")));
 
         this.setClosable(false);
         this.setText("Home");
-        homeIcon.setSize("25");
         this.setGraphic(homeIcon);
 
         // Layout

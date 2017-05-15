@@ -21,12 +21,12 @@ package com.github.kmeel.plugins;
 import com.github.kmeel.api.KmeelAPI;
 import com.github.kmeel.api.spi.GlobalTab;
 import com.github.kmeel.api.spi.Report;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -62,11 +62,10 @@ public class ReportTabPlugin extends Plugin {
             gridPane.setVgap(5);
 
             // Tab
-            FontAwesomeIconView reportIcon = new FontAwesomeIconView(FontAwesomeIcon.FILE_TEXT);
+            ImageView reportIcon = new ImageView(new Image(this.getClass().getResourceAsStream("/images/report.png")));
 
             tab.setClosable(false);
             tab.setText("Report");
-            reportIcon.setSize("20");
             tab.setGraphic(reportIcon);
             tab.setContent(gridPane);
 

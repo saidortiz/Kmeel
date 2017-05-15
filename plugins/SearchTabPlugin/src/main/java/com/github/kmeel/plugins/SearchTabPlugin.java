@@ -24,8 +24,6 @@ import com.github.kmeel.api.spi.GlobalTab;
 import com.github.kmeel.api.spi.listeners.BookmarkListener;
 import com.github.kmeel.api.view.MessagePane;
 import com.github.kmeel.plugins.custom.CustomTextField;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
@@ -33,6 +31,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -73,11 +73,10 @@ public class SearchTabPlugin extends Plugin {
             SearchController searchController = new SearchController(kmeelAPI, messagePane);
 
             // Tab
-            FontAwesomeIconView searchIcon = new FontAwesomeIconView(FontAwesomeIcon.SEARCH);
+            ImageView searchIcon = new ImageView(new Image(this.getClass().getResourceAsStream("/images/search.png")));
 
             tab.setClosable(false);
             tab.setText("Search");
-            searchIcon.setSize("20");
             tab.setGraphic(searchIcon);
 
             // Top HBox
@@ -89,20 +88,18 @@ public class SearchTabPlugin extends Plugin {
 
             // Search Field
             CustomTextField searchField = new CustomTextField();
-            FontAwesomeIconView helpIcon = new FontAwesomeIconView(FontAwesomeIcon.QUESTION);
+            ImageView helpIcon = new ImageView(new Image(this.getClass().getResourceAsStream("/images/question.png")));
 
             helpIcon.setCursor(Cursor.HAND);
-            helpIcon.setSize("28");
 
             searchField.setMaxWidth(Double.MAX_VALUE);
             searchField.setRight(helpIcon);
 
             // Settings Label
             Label settingsLabel = new Label();
-            FontAwesomeIconView settingsIcon = new FontAwesomeIconView(FontAwesomeIcon.GEAR);
+            ImageView settingsIcon = new ImageView(new Image(this.getClass().getResourceAsStream("/images/gear.png")));
 
             settingsLabel.setCursor(Cursor.HAND);
-            settingsIcon.setSize("30");
             settingsLabel.setGraphic(settingsIcon);
 
             // Add

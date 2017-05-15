@@ -24,7 +24,6 @@
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-queryparser:6.4.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-queries:6.4.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-sandbox:6.4.2" level="project" />
-    <orderEntry type="library" name="Maven: de.jensd:fontawesomefx:8.9" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.1.7" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.1.7" level="project" />

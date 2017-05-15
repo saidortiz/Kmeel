@@ -51,27 +51,29 @@ public class AttachmentSelectionHandler {
     }
 
     public void handle(MessagePane messagePane) {
-        Optional<ButtonType> confirmOpen = new Alert(Alert.AlertType.CONFIRMATION, "Would you like to open this attachment?", ButtonType.YES, ButtonType.NO).showAndWait();
-
         AttachmentRow row = messagePane.getAttachmentsTable().getSelectionModel().getSelectedItem();
         ID attachmentID = row.getID();
 
-        if (confirmOpen.isPresent() && confirmOpen.get() == ButtonType.YES) {
-            Path outputPath = Paths.get(OSUtils.getTempPath() + row.getAttachmentName());
+        if (emlModel.getAttachmentFromID().get(attachmentID) != null) {
+            Optional<ButtonType> confirmOpen = new Alert(Alert.AlertType.CONFIRMATION, "Would you like to open this attachment?", ButtonType.YES, ButtonType.NO).showAndWait();
 
-            try {
-                Files.copy(emlModel.getAttachmentFromID().get(attachmentID), outputPath, StandardCopyOption.REPLACE_EXISTING);
+            if (confirmOpen.isPresent() && confirmOpen.get() == ButtonType.YES) {
+                Path outputPath = Paths.get(OSUtils.getTempPath() + row.getAttachmentName());
 
-                SwingUtilities.invokeLater(() -> {
-                    try {
-                        Desktop.getDesktop().open(outputPath.toFile());
-                    } catch (IOException ex) {
-                        log.error(ex.getMessage(), ex);
-                    }
-                });
-            } catch (IOException ex) {
-                log.error(ex.getMessage(), ex);
-                new Alert(Alert.AlertType.ERROR, "Failed to open attachment: " + ex.getMessage(), ButtonType.CLOSE).showAndWait();
+                try {
+                    Files.copy(emlModel.getAttachmentFromID().get(attachmentID), outputPath, StandardCopyOption.REPLACE_EXISTING);
+
+                    SwingUtilities.invokeLater(() -> {
+                        try {
+                            Desktop.getDesktop().open(outputPath.toFile());
+                        } catch (IOException ex) {
+                            log.error(ex.getMessage(), ex);
+                        }
+                    });
+                } catch (IOException ex) {
+                    log.error(ex.getMessage(), ex);
+                    new Alert(Alert.AlertType.ERROR, "Failed to open attachment: " + ex.getMessage(), ButtonType.CLOSE).showAndWait();
+                }
             }
         }
     }

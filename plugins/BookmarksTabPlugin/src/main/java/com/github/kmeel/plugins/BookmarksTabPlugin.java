@@ -24,10 +24,10 @@ import com.github.kmeel.api.spi.GlobalTab;
 import com.github.kmeel.api.spi.listeners.BookmarkListener;
 import com.github.kmeel.api.spi.listeners.TagListener;
 import com.github.kmeel.api.view.MessagePane;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.scene.control.Tab;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import ro.fortsoft.pf4j.Extension;
@@ -59,11 +59,10 @@ public class BookmarksTabPlugin extends Plugin {
             messagePane = new MessagePane(kmeelAPI);
 
             // Tab
-            FontAwesomeIconView bookmarkIcon = new FontAwesomeIconView(FontAwesomeIcon.BOOKMARK);
+            ImageView bookmarkIcon = new ImageView(new Image(this.getClass().getResourceAsStream("/images/bookmark.png")));
 
             tab.setClosable(false);
             tab.setText("Bookmarks");
-            bookmarkIcon.setSize("21");
             tab.setGraphic(bookmarkIcon);
             tab.setContent(gridPane);
 

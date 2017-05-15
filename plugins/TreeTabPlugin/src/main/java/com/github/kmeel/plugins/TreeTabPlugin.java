@@ -26,8 +26,6 @@ import com.github.kmeel.api.spi.listeners.BookmarkListener;
 import com.github.kmeel.api.spi.listeners.TagListener;
 import com.github.kmeel.api.view.MessagePane;
 import com.github.kmeel.plugins.checktreeview.CheckTreeView;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -39,6 +37,8 @@ import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TreeItem;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
@@ -69,12 +69,11 @@ public class TreeTabPlugin extends Plugin {
             messagePane = new MessagePane(kmeelAPI);
 
             // Tab
-            FontAwesomeIconView treeIcon = new FontAwesomeIconView(FontAwesomeIcon.SITEMAP);
+            ImageView homeIcon = new ImageView(new Image(this.getClass().getResourceAsStream("/images/tree.png")));
 
             tab.setText("Tree");
             tab.setClosable(false);
-            treeIcon.setSize("23");
-            tab.setGraphic(treeIcon);
+            tab.setGraphic(homeIcon);
             tab.setContent(borderPane);
 
             // File Tree

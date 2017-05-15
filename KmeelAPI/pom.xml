@@ -102,11 +102,5 @@
             <artifactId>lucene-queryparser</artifactId>
             <version>6.4.2</version>
         </dependency>
-
-        <dependency>
-            <groupId>de.jensd</groupId>
-            <artifactId>fontawesomefx</artifactId>
-            <version>8.9</version>
-        </dependency>
     </dependencies>
 </project>
